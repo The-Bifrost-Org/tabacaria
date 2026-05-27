@@ -1,21 +1,24 @@
-import AgeGateModal from "./components/AgeGateModal";
-import Header from "./components/Header";
-import CategoryFilter from "./components/CategoryFilter";
-import ProductGrid from "./components/ProductGrid";
-import CartBar from "./components/CartBar";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function CatalogPage() {
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({
+      include: { category: true, variations: true },
+      orderBy: { order: "asc" }
+    }),
+    prisma.category.findMany({
+      orderBy: { order: "asc" }
+    })
+  ]);
+
   return (
-    <>
-      <AgeGateModal />
-      <div className="flex flex-col min-h-screen bg-[#FAFAF8]">
-        <Header />
-        <CategoryFilter />
-        <main className="flex-1 px-4 py-4 pb-24">
-          <ProductGrid />
-        </main>
-        <CartBar />
-      </div>
-    </>
+    <main className="min-h-screen bg-brand-bg">
+      <h1 className="font-display text-2xl font-bold text-center py-8 text-ink-primary">
+        Catálogo
+      </h1>
+      <pre className="p-4 text-xs text-ink-secondary">
+        {JSON.stringify({ products, categories }, null, 2)}
+      </pre>
+    </main>
   );
 }
