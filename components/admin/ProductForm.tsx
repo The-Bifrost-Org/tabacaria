@@ -48,6 +48,7 @@ export function ProductForm({ productId }: Props) {
 
   useEffect(() => {
     if (!isEdit) return;
+
     fetch(`/api/products/${productId}`)
       .then((r) => r.json())
       .then((p) => {
@@ -57,7 +58,12 @@ export function ProductForm({ productId }: Props) {
         setAvailable(p.available);
         setImageUrl(p.imageUrl ?? null);
         setAdminNote(p.adminNote ?? "");
-        setImages(p.images?.map((i: any) => i.url) ?? []);
+        const imgs = p.images?.map((i: any) => i.url) ?? [];
+        if (imgs.length === 0 && p.imageUrl) {
+          setImages([p.imageUrl]);
+        } else {
+          setImages(imgs);
+        }
         if (p.variations?.length > 0) {
           setHasVariations(true);
           setVariations(
