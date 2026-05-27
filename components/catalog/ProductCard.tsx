@@ -4,39 +4,28 @@ import Image from "next/image";
 import { useState } from "react";
 import { clsx } from "clsx";
 import type { ProductWithRelations } from "@/types";
-import { useCart } from "@/components/cart/CartProvider";
-import { VariationModal } from "@/components/modals/VariationModal";
+import { ProductModal } from "@/components/modals/ProductModal";
 
 interface Props {
   product: ProductWithRelations;
 }
 
 export function ProductCard({ product }: Props) {
-  const { addToCart } = useCart();
   const [showModal, setShowModal] = useState(false);
 
-  function handleAdd() {
-    if (!product.available) return;
-    if (product.variations.length > 0) {
-      setShowModal(true);
-    } else {
-      addToCart({
-        productId: product.id,
-        name: product.name,
-        unitPrice: product.price,
-        qty: 1
-      });
-    }
-  }
+  const mainImage = product.images?.[0]?.url ?? product.imageUrl;
 
   return (
     <>
-      <div className="relative rounded-xl overflow-hidden shadow-sm bg-white flex flex-col">
+      <div
+        className="relative rounded-xl overflow-hidden shadow-sm bg-white flex flex-col cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => setShowModal(true)}
+      >
         {/* Imagem */}
         <div className="relative aspect-square bg-gray-100">
-          {product.images?.length > 0 || product.imageUrl ? (
+          {mainImage ? (
             <Image
-              src={product.images?.[0]?.url ?? product.imageUrl ?? ""}
+              src={mainImage}
               alt={product.name}
               fill
               className={clsx(
@@ -88,28 +77,25 @@ export function ProductCard({ product }: Props) {
             </p>
           </div>
 
-          <button
-            onClick={handleAdd}
-            disabled={!product.available}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowModal(true);
+            }}
             className={clsx(
-              "flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold transition-all",
+              "flex-shrink-0 min-w-[36px] w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold transition-all",
               product.available
                 ? "bg-gold text-white hover:bg-gold-dark active:scale-90"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
             )}
-            aria-label={
-              product.available
-                ? `Adicionar ${product.name}`
-                : "Produto esgotado"
-            }
           >
             +
-          </button>
+          </div>
         </div>
       </div>
 
       {showModal && (
-        <VariationModal product={product} onClose={() => setShowModal(false)} />
+        <ProductModal product={product} onClose={() => setShowModal(false)} />
       )}
     </>
   );
