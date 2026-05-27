@@ -29,9 +29,14 @@ export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [newCatName, setNewCatName] = useState("");
+  const [showCatForm, setShowCatForm] = useState(false);
+  const [catLoading, setCatLoading] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   async function fetchProducts() {
@@ -39,6 +44,47 @@ export default function AdminPage() {
     const res = await fetch("/api/products");
     setProducts(await res.json());
     setLoading(false);
+  }
+
+  async function fetchCategories() {
+    const res = await fetch("/api/categories");
+    setCategories(await res.json());
+  }
+
+  async function addCategory() {
+    if (!newCatName.trim()) return;
+    setCatLoading(true);
+    const slug = newCatName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
+    await fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCatName, slug })
+    });
+    setNewCatName("");
+    setShowCatForm(false);
+    fetchCategories();
+    setCatLoading(false);
+  }
+
+  async function deleteCategory(id: string) {
+    if (
+      !confirm(
+        "Excluir esta categoria? Os produtos vinculados ficarão sem categoria."
+      )
+    )
+      return;
+    await fetch("/api/categories", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    fetchCategories();
   }
 
   async function toggleAvailable(id: string, current: boolean) {
@@ -100,6 +146,60 @@ export default function AdminPage() {
             <p className="text-sm text-ink-muted mt-1">Esgotados ⚠️</p>
           </div>
         </div>
+
+        {/* Categorias */}
+        <section className="bg-white rounded-2xl border border-brand-border p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-ink-primary">Categorias</h2>
+            <button
+              onClick={() => setShowCatForm((s) => !s)}
+              className="text-sm text-gold hover:text-gold-dark font-medium transition-colors"
+            >
+              + Nova
+            </button>
+          </div>
+
+          {showCatForm && (
+            <div className="flex gap-2 animate-fade-in">
+              <input
+                placeholder="Nome da categoria"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                className="flex-1 border border-brand-border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold transition-colors"
+              />
+              <button
+                onClick={addCategory}
+                disabled={catLoading}
+                className="bg-gold hover:bg-gold-dark text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {catLoading ? "..." : "Salvar"}
+              </button>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-3 py-1"
+              >
+                <span className="text-sm text-ink-primary">{cat.name}</span>
+                <button
+                  onClick={() => deleteCategory(cat.id)}
+                  className="text-ink-muted hover:text-red-500 transition-colors ml-1 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            {categories.length === 0 && (
+              <p className="text-sm text-ink-muted">
+                Nenhuma categoria cadastrada
+              </p>
+            )}
+          </div>
+        </section>
 
         {/* Ações */}
         <div className="flex gap-3">
