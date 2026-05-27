@@ -1,8 +1,14 @@
-import type { Product, Category, Variation } from "@prisma/client";
+import type {
+  Product,
+  Category,
+  Variation,
+  ProductImage
+} from "@prisma/client";
 
 export type ProductWithRelations = Product & {
   category: Category;
   variations: Variation[];
+  images: ProductImage[];
 };
 
 export interface CartItem {

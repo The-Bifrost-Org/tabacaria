@@ -7,7 +7,11 @@ export async function GET(
 ) {
   const product = await prisma.product.findUnique({
     where: { id: params.id },
-    include: { category: true, variations: true }
+    include: {
+      category: true,
+      variations: true,
+      images: { orderBy: { order: "asc" } }
+    }
   });
   if (!product)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -26,7 +30,19 @@ export async function PATCH(
   if (body.price !== undefined) data.price = body.price;
   if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl;
   if (body.available !== undefined) data.available = body.available;
-  if (body.categoryId !== undefined) data.categoryId = body.categoryId;
+  if (body.adminNote !== undefined) data.adminNote = body.adminNote;
+  if (body.categoryId !== undefined) {
+    data.category = { connect: { id: body.categoryId } };
+  }
+  if (body.images !== undefined) {
+    data.images = {
+      deleteMany: {},
+      create: body.images.map((img: any, i: number) => ({
+        url: img.url,
+        order: i
+      }))
+    };
+  }
 
   if (body.variations !== undefined) {
     data.variations = {
@@ -34,6 +50,7 @@ export async function PATCH(
       create: body.variations.map((v: any, i: number) => ({
         name: v.name,
         price: v.price,
+        imageUrl: v.imageUrl ?? null,
         order: i
       }))
     };
@@ -42,9 +59,12 @@ export async function PATCH(
   const product = await prisma.product.update({
     where: { id: params.id },
     data,
-    include: { category: true, variations: true }
+    include: {
+      category: true,
+      variations: true,
+      images: { orderBy: { order: "asc" } }
+    }
   });
-
   return NextResponse.json(product);
 }
 
@@ -55,5 +75,3 @@ export async function DELETE(
   await prisma.product.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });
 }
-
-

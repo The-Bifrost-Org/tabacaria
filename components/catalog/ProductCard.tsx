@@ -34,9 +34,9 @@ export function ProductCard({ product }: Props) {
       <div className="relative rounded-xl overflow-hidden shadow-sm bg-white flex flex-col">
         {/* Imagem */}
         <div className="relative aspect-square bg-gray-100">
-          {product.imageUrl ? (
+          {product.images?.length > 0 || product.imageUrl ? (
             <Image
-              src={product.imageUrl}
+              src={product.images?.[0]?.url ?? product.imageUrl ?? ""}
               alt={product.name}
               fill
               className={clsx(
@@ -62,6 +62,13 @@ export function ProductCard({ product }: Props) {
           >
             {product.available ? "Disponível" : "Esgotado"}
           </span>
+
+          {/* Indicador de múltiplas fotos */}
+          {product.images?.length > 1 && (
+            <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
+              +{product.images.length - 1} fotos
+            </span>
+          )}
         </div>
 
         {/* Info */}
@@ -70,6 +77,11 @@ export function ProductCard({ product }: Props) {
             <p className="font-semibold text-sm text-ink-primary leading-snug line-clamp-2">
               {product.name}
             </p>
+            {product.adminNote && (
+              <p className="text-xs text-ink-muted mt-0.5 line-clamp-1">
+                📌 {product.adminNote}
+              </p>
+            )}
             <p className="text-sm font-bold text-gold mt-1">
               {product.variations.length > 0 ? "A partir de " : ""}
               R$ {product.price.toFixed(2).replace(".", ",")}

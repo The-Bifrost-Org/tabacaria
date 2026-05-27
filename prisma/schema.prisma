@@ -17,24 +17,27 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   description String?
+  adminNote   String?
   price       Float
   imageUrl    String?
-  available   Boolean     @default(true)
-  order       Int         @default(0)
+  images      ProductImage[]
+  available   Boolean        @default(true)
+  order       Int            @default(0)
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
+  category    Category       @relation(fields: [categoryId], references: [id])
   variations  Variation[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
 model Variation {
   id        String   @id @default(cuid())
   name      String
   price     Float
+  imageUrl  String?
   available Boolean  @default(true)
   order     Int      @default(0)
   productId String
@@ -55,4 +58,21 @@ model StoreConfig {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  type      String // 'sugestao' ou 'feedback'
+  message   String
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

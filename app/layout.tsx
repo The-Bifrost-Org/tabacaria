@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/cart/CartProvider";
 import { CartBar } from "@/components/cart/CartBar";
 import { AgeGateModal } from "@/components/modals/AgeGateModal";
 import { CONFIG } from "@/lib/config";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 export const metadata: Metadata = {
   title: CONFIG.STORE_NAME,
@@ -22,6 +23,7 @@ export default function RootLayout({
           <AgeGateModal />
           {children}
           <CartBar />
+          <FeedbackButton />
         </CartProvider>
       </body>
     </html>

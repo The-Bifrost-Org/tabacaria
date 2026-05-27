@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 interface Variation {
   name: string;
   price: string;
+  imageUrl: string;
 }
 interface Category {
   id: string;
@@ -27,7 +28,7 @@ export function ProductForm({ productId }: Props) {
   const [price, setPrice] = useState("");
   const [hasVariations, setHasVariations] = useState(false);
   const [variations, setVariations] = useState<Variation[]>([
-    { name: "", price: "" }
+    { name: "", price: "", imageUrl: "" }
   ]);
   const [available, setAvailable] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,9 @@ export function ProductForm({ productId }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [adminNote, setAdminNote] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -52,12 +56,15 @@ export function ProductForm({ productId }: Props) {
         setPrice(String(p.price));
         setAvailable(p.available);
         setImageUrl(p.imageUrl ?? null);
+        setAdminNote(p.adminNote ?? "");
+        setImages(p.images?.map((i: any) => i.url) ?? []);
         if (p.variations?.length > 0) {
           setHasVariations(true);
           setVariations(
             p.variations.map((v: any) => ({
               name: v.name,
-              price: String(v.price)
+              price: String(v.price),
+              imageUrl: v.imageUrl ?? ""
             }))
           );
         }
@@ -66,7 +73,7 @@ export function ProductForm({ productId }: Props) {
   }, [productId, isEdit]);
 
   function addVariation() {
-    setVariations((prev) => [...prev, { name: "", price: "" }]);
+    setVariations((prev) => [...prev, { name: "", price: "", imageUrl: "" }]);
   }
 
   function removeVariation(i: number) {
@@ -103,11 +110,17 @@ export function ProductForm({ productId }: Props) {
       categoryId,
       available,
       imageUrl,
+      images: images.map((url, i) => ({ url, order: i })),
+      adminNote: adminNote || null,
       price: hasVariations
         ? Math.min(...variations.map((v) => Number(v.price)))
         : Number(price),
       variations: hasVariations
-        ? variations.map((v) => ({ name: v.name, price: Number(v.price) }))
+        ? variations.map((v) => ({
+            name: v.name,
+            price: Number(v.price),
+            imageUrl: v.imageUrl || null
+          }))
         : []
     };
 
@@ -138,6 +151,35 @@ export function ProductForm({ productId }: Props) {
     const data = await res.json();
     setImageUrl(data.url);
     setUploading(false);
+  }
+
+  async function handleVariationImage(
+    i: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    const data = await res.json();
+    setVariations((prev) =>
+      prev.map((v, idx) => (idx === i ? { ...v, imageUrl: data.url } : v))
+    );
+  }
+
+  async function handleMultipleImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploadingImg(true);
+    for (const file of files) {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json();
+      setImages((prev) => [...prev, data.url]);
+    }
+    setUploadingImg(false);
   }
 
   const inputClass = (field: string) =>
@@ -187,43 +229,76 @@ export function ProductForm({ productId }: Props) {
             <p className="text-red-500 text-xs mt-1">{errors.name}</p>
           )}
         </div>
-        {/* Upload de imagem */}
         <div>
           <label className="text-sm font-medium text-ink-secondary mb-1 block">
-            Foto do produto
+            Observação{" "}
+            <span className="text-xs text-ink-muted">
+              (visível para o cliente)
+            </span>
           </label>
-          <div className="border-2 border-dashed border-brand-border rounded-xl p-4 text-center">
-            {imageUrl ? (
-              <div>
-                <img
-                  src={imageUrl}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg mb-2"
-                />
-                <button
-                  onClick={() => setImageUrl(null)}
-                  className="text-xs text-red-500 hover:text-red-700"
+          <textarea
+            className="w-full border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold transition-colors resize-none"
+            placeholder="Ex: Produto importado, prazo de entrega 2 dias..."
+            rows={3}
+            value={adminNote}
+            onChange={(e) => setAdminNote(e.target.value)}
+          />
+        </div>
+        {/* Galeria de imagens */}
+        <div>
+          <label className="text-sm font-medium text-ink-secondary mb-1 block">
+            Fotos do produto
+          </label>
+
+          {/* Preview das imagens */}
+          {images.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {images.map((url, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-square rounded-xl overflow-hidden bg-gray-100"
                 >
-                  Remover foto
-                </button>
-              </div>
-            ) : (
-              <label className="cursor-pointer block">
-                <div className="text-3xl mb-2">📷</div>
-                <p className="text-sm text-ink-muted mb-1">
-                  {uploading ? "Enviando..." : "Clique para enviar uma foto"}
-                </p>
-                <p className="text-xs text-ink-muted">JPG, PNG ou WEBP</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                />
-              </label>
-            )}
-          </div>
+                  <img
+                    src={url}
+                    alt={`Foto ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {i === 0 && (
+                    <span className="absolute top-1 left-1 bg-gold text-white text-xs px-1.5 py-0.5 rounded-full">
+                      Principal
+                    </span>
+                  )}
+                  <button
+                    onClick={() =>
+                      setImages((prev) => prev.filter((_, idx) => idx !== i))
+                    }
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload */}
+          <label className="cursor-pointer block border-2 border-dashed border-brand-border rounded-xl p-4 text-center hover:border-gold transition-colors">
+            <div className="text-2xl mb-1">📷</div>
+            <p className="text-sm text-ink-muted">
+              {uploadingImg ? "Enviando..." : "Clique para adicionar fotos"}
+            </p>
+            <p className="text-xs text-ink-muted">
+              Pode selecionar várias de uma vez
+            </p>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleMultipleImages}
+              disabled={uploadingImg}
+            />
+          </label>
         </div>
 
         {/* Categoria */}
@@ -317,45 +392,74 @@ export function ProductForm({ productId }: Props) {
               Variações
             </label>
             {variations.map((v, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <div className="flex-1">
-                  <input
-                    className={inputClass(`var_name_${i}`)}
-                    placeholder="Nome (ex: Mint)"
-                    value={v.name}
-                    onChange={(e) => updateVariation(i, "name", e.target.value)}
-                  />
-                  {errors[`var_name_${i}`] && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors[`var_name_${i}`]}
-                    </p>
-                  )}
+              <div key={i} className="bg-brand-bg rounded-xl p-3 space-y-2">
+                <div className="flex gap-2 items-start">
+                  {/* Foto da variação */}
+                  <label className="cursor-pointer flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-brand-border hover:border-gold transition-colors flex items-center justify-center">
+                      {v.imageUrl ? (
+                        <img
+                          src={v.imageUrl}
+                          alt={v.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl">📷</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleVariationImage(i, e)}
+                    />
+                  </label>
+
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          className={inputClass(`var_name_${i}`)}
+                          placeholder="Nome (ex: Mint)"
+                          value={v.name}
+                          onChange={(e) =>
+                            updateVariation(i, "name", e.target.value)
+                          }
+                        />
+                        {errors[`var_name_${i}`] && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`var_name_${i}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div className="w-28">
+                        <input
+                          className={inputClass(`var_price_${i}`)}
+                          placeholder="R$"
+                          type="number"
+                          step="0.01"
+                          value={v.price}
+                          onChange={(e) =>
+                            updateVariation(i, "price", e.target.value)
+                          }
+                        />
+                        {errors[`var_price_${i}`] && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`var_price_${i}`]}
+                          </p>
+                        )}
+                      </div>
+                      {variations.length > 1 && (
+                        <button
+                          onClick={() => removeVariation(i)}
+                          className="mt-3 text-red-400 hover:text-red-600 text-lg"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="w-28">
-                  <input
-                    className={inputClass(`var_price_${i}`)}
-                    placeholder="R$"
-                    type="number"
-                    step="0.01"
-                    value={v.price}
-                    onChange={(e) =>
-                      updateVariation(i, "price", e.target.value)
-                    }
-                  />
-                  {errors[`var_price_${i}`] && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors[`var_price_${i}`]}
-                    </p>
-                  )}
-                </div>
-                {variations.length > 1 && (
-                  <button
-                    onClick={() => removeVariation(i)}
-                    className="mt-3 text-red-400 hover:text-red-600 text-lg"
-                  >
-                    ✕
-                  </button>
-                )}
               </div>
             ))}
             <button
