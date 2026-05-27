@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CartProvider } from "@/components/cart/CartProvider";
+import { CartBar } from "@/components/cart/CartBar";
+import { AgeGateModal } from "@/components/modals/AgeGateModal";
 import { CONFIG } from "@/lib/config";
-import { CartProvider } from "./components/cart/CartProvider";
 
 export const metadata: Metadata = {
   title: CONFIG.STORE_NAME,
@@ -16,7 +18,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          <AgeGateModal />
+          {children}
+          <CartBar />
+        </CartProvider>
       </body>
     </html>
   );
