@@ -8,6 +8,7 @@ interface Variation {
   id: string;
   name: string;
   price: number;
+  available: boolean;
 }
 interface Category {
   id: string;
@@ -33,6 +34,7 @@ export default function AdminPage() {
   const [newCatName, setNewCatName] = useState("");
   const [showCatForm, setShowCatForm] = useState(false);
   const [catLoading, setCatLoading] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -60,7 +62,6 @@ export default function AdminPage() {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-
     await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -73,12 +74,7 @@ export default function AdminPage() {
   }
 
   async function deleteCategory(id: string) {
-    if (
-      !confirm(
-        "Excluir esta categoria? Os produtos vinculados ficarão sem categoria."
-      )
-    )
-      return;
+    if (!confirm("Excluir esta categoria?")) return;
     await fetch("/api/categories", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -92,6 +88,30 @@ export default function AdminPage() {
       prev.map((p) => (p.id === id ? { ...p, available: !current } : p))
     );
     await fetch(`/api/products/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ available: !current })
+    });
+  }
+
+  async function toggleVariation(
+    productId: string,
+    variationId: string,
+    current: boolean
+  ) {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? {
+              ...p,
+              variations: p.variations.map((v) =>
+                v.id === variationId ? { ...v, available: !current } : v
+              )
+            }
+          : p
+      )
+    );
+    await fetch(`/api/variations/${variationId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ available: !current })
@@ -112,13 +132,42 @@ export default function AdminPage() {
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
-
   const totalEsgotados = products.filter((p) => !p.available).length;
+
+  function Toggle({
+    on,
+    onToggle,
+    size = "md"
+  }: {
+    on: boolean;
+    onToggle: () => void;
+    size?: "sm" | "md";
+  }) {
+    const isSm = size === "sm";
+    return (
+      <button
+        onClick={onToggle}
+        className={clsx(
+          "rounded-full transition-colors relative flex-shrink-0",
+          isSm ? "w-8 h-4" : "w-11 h-6",
+          on ? "bg-green-500" : "bg-gray-300"
+        )}
+      >
+        <span
+          className={clsx(
+            "absolute bg-white rounded-full shadow transition-transform",
+            isSm ? "top-0.5 left-0.5 w-3 h-3" : "top-0.5 left-0.5 w-5 h-5",
+            on ? (isSm ? "translate-x-4" : "translate-x-5") : "translate-x-0"
+          )}
+        />
+      </button>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg">
       {/* Header */}
-      <div className="bg-white border-b border-brand-border px-4 h-16 flex items-center justify-between">
+      <div className="bg-white border-b border-brand-border px-4 h-16 flex items-center justify-between sticky top-0 z-40">
         <h1 className="font-display text-lg font-bold text-ink-primary">
           🏪 Painel Admin
         </h1>
@@ -137,13 +186,18 @@ export default function AdminPage() {
             <p className="text-3xl font-bold text-ink-primary">
               {products.length}
             </p>
-            <p className="text-sm text-ink-muted mt-1">Produtos Total</p>
+            <p className="text-sm text-ink-muted mt-1">Produtos</p>
           </div>
           <div className="bg-white rounded-2xl border border-brand-border p-4">
-            <p className="text-3xl font-bold text-amber-500">
+            <p
+              className={clsx(
+                "text-3xl font-bold",
+                totalEsgotados > 0 ? "text-amber-500" : "text-green-500"
+              )}
+            >
               {totalEsgotados}
             </p>
-            <p className="text-sm text-ink-muted mt-1">Esgotados ⚠️</p>
+            <p className="text-sm text-ink-muted mt-1">Esgotados</p>
           </div>
         </div>
 
@@ -158,7 +212,6 @@ export default function AdminPage() {
               + Nova
             </button>
           </div>
-
           {showCatForm && (
             <div className="flex gap-2 animate-fade-in">
               <input
@@ -166,18 +219,17 @@ export default function AdminPage() {
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addCategory()}
-                className="flex-1 border border-brand-border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold transition-colors"
+                className="flex-1 border border-brand-border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold"
               />
               <button
                 onClick={addCategory}
                 disabled={catLoading}
-                className="bg-gold hover:bg-gold-dark text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50"
+                className="bg-gold hover:bg-gold-dark text-white px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
               >
                 {catLoading ? "..." : "Salvar"}
               </button>
             </div>
           )}
-
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <div
@@ -187,31 +239,29 @@ export default function AdminPage() {
                 <span className="text-sm text-ink-primary">{cat.name}</span>
                 <button
                   onClick={() => deleteCategory(cat.id)}
-                  className="text-ink-muted hover:text-red-500 transition-colors ml-1 text-xs"
+                  className="text-ink-muted hover:text-red-500 ml-1 text-xs"
                 >
                   ✕
                 </button>
               </div>
             ))}
             {categories.length === 0 && (
-              <p className="text-sm text-ink-muted">
-                Nenhuma categoria cadastrada
-              </p>
+              <p className="text-sm text-ink-muted">Nenhuma categoria</p>
             )}
           </div>
         </section>
 
-        {/* Ações */}
+        {/* Busca + novo */}
         <div className="flex gap-3">
           <input
             placeholder="🔍 Buscar produto..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold transition-colors"
+            className="flex-1 border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold"
           />
           <button
             onClick={() => router.push("/admin/produto/novo")}
-            className="bg-gold hover:bg-gold-dark text-white font-semibold px-4 py-3 rounded-xl text-sm transition-colors whitespace-nowrap"
+            className="bg-gold hover:bg-gold-dark text-white font-semibold px-4 py-3 rounded-xl text-sm whitespace-nowrap"
           >
             + Novo
           </button>
@@ -223,7 +273,7 @@ export default function AdminPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-brand-border p-4 animate-pulse h-20"
+                className="bg-white rounded-2xl border border-brand-border p-4 animate-pulse h-24"
               />
             ))}
           </div>
@@ -237,67 +287,140 @@ export default function AdminPage() {
             {filtered.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl border border-brand-border p-4 flex items-center gap-4"
+                className="bg-white rounded-2xl border border-brand-border overflow-hidden"
               >
-                {/* Imagem */}
-                <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-2xl overflow-hidden">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    "🪄"
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-ink-primary truncate">
-                    {product.name}
-                  </p>
-                  <p className="text-xs text-ink-muted">
-                    {product.category.name}
-                  </p>
-                  <p className="text-xs font-bold text-gold mt-0.5">
-                    R$ {product.price.toFixed(2).replace(".", ",")}
-                    {product.variations.length > 0 &&
-                      ` · ${product.variations.length} variações`}
-                  </p>
-                </div>
-
-                {/* Toggle disponível */}
-                <button
-                  onClick={() => toggleAvailable(product.id, product.available)}
-                  className={clsx(
-                    "w-11 h-6 rounded-full transition-colors relative flex-shrink-0",
-                    product.available ? "bg-green-500" : "bg-gray-300"
-                  )}
-                >
-                  <span
-                    className={clsx(
-                      "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
-                      product.available ? "translate-x-5" : "translate-x-0"
+                {/* Linha principal */}
+                <div className="flex items-center gap-3 p-4">
+                  {/* Foto */}
+                  <div className="w-14 h-14 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-2xl">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      "🪄"
                     )}
-                  />
-                </button>
+                  </div>
 
-                {/* Ações */}
-                <div className="flex flex-col gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => router.push(`/admin/produto/${product.id}`)}
-                    className="text-xs text-ink-secondary hover:text-gold transition-colors px-2 py-1 rounded-lg hover:bg-amber-50"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => deleteProduct(product.id)}
-                    className="text-xs text-ink-secondary hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-                  >
-                    Excluir
-                  </button>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-ink-primary truncate">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {product.category.name}
+                    </p>
+                    <p className="text-xs font-bold text-gold mt-0.5">
+                      R$ {product.price.toFixed(2).replace(".", ",")}
+                      {product.variations.length > 0 &&
+                        ` · ${product.variations.length} variações`}
+                    </p>
+                  </div>
+
+                  {/* Ações direita */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Toggle produto disponível */}
+                    <div className="flex flex-col items-center gap-1">
+                      <Toggle
+                        on={product.available}
+                        onToggle={() =>
+                          toggleAvailable(product.id, product.available)
+                        }
+                      />
+                      <span className="text-xs text-ink-muted">
+                        {product.available ? "Ativo" : "Esgotado"}
+                      </span>
+                    </div>
+
+                    {/* Botões */}
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() =>
+                          router.push(`/admin/produto/${product.id}`)
+                        }
+                        className="text-xs bg-amber-50 hover:bg-amber-100 text-gold font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button
+                        onClick={() => deleteProduct(product.id)}
+                        className="text-xs bg-red-50 hover:bg-red-100 text-red-500 font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        🗑️ Excluir
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Variações — expansível */}
+                {product.variations.length > 0 && (
+                  <>
+                    <button
+                      onClick={() =>
+                        setExpanded(expanded === product.id ? null : product.id)
+                      }
+                      className="w-full flex items-center justify-between px-4 py-2 bg-brand-bg border-t border-brand-border text-xs text-ink-secondary hover:text-ink-primary transition-colors"
+                    >
+                      <span>
+                        {product.variations.filter((v) => !v.available).length >
+                        0
+                          ? `⚠️ ${product.variations.filter((v) => !v.available).length} variação(ões) esgotada(s)`
+                          : "✅ Todas variações disponíveis"}
+                      </span>
+                      <span>
+                        {expanded === product.id
+                          ? "▲ Fechar"
+                          : "▼ Gerenciar variações"}
+                      </span>
+                    </button>
+
+                    {expanded === product.id && (
+                      <div className="px-4 pb-4 space-y-2 animate-fade-in">
+                        {product.variations.map((v) => (
+                          <div
+                            key={v.id}
+                            className="flex items-center justify-between bg-brand-bg rounded-xl px-3 py-2"
+                          >
+                            <div>
+                              <p
+                                className={clsx(
+                                  "text-sm font-medium",
+                                  !v.available && "line-through text-ink-muted"
+                                )}
+                              >
+                                {v.name}
+                              </p>
+                              <p className="text-xs text-gold font-bold">
+                                R$ {v.price.toFixed(2).replace(".", ",")}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={clsx(
+                                  "text-xs font-medium",
+                                  v.available
+                                    ? "text-green-600"
+                                    : "text-red-400"
+                                )}
+                              >
+                                {v.available ? "Disponível" : "Esgotado"}
+                              </span>
+                              <Toggle
+                                on={v.available}
+                                onToggle={() =>
+                                  toggleVariation(product.id, v.id, v.available)
+                                }
+                                size="sm"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             ))}
           </div>

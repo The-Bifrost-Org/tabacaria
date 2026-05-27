@@ -11,14 +11,14 @@ const config: Config = {
           dark: "#9A7A2E"
         },
         brand: {
-          bg: "#FAFAF8",
+          bg: "#F5F0E8",
           surface: "#FFFFFF",
-          border: "#E8E5DF"
+          border: "#E0D8CC"
         },
         ink: {
-          primary: "#1A1814",
-          secondary: "#6B6560",
-          muted: "#A09890"
+          primary: "#1B2A4A",
+          secondary: "#3D5080",
+          muted: "#6B7A99"
         }
       },
       fontFamily: {

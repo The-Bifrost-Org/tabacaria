@@ -17,6 +17,7 @@ export function VariationModal({ product, onClose }: Props) {
   );
   const [qty, setQty] = useState(1);
 
+  const availableVariations = product.variations.filter((v) => v.available);
   const selectedVariation = product.variations.find(
     (v) => v.id === selectedVariationId
   );
@@ -63,16 +64,38 @@ export function VariationModal({ product, onClose }: Props) {
           {product.variations.map((v) => (
             <button
               key={v.id}
-              onClick={() => setSelectedVariationId(v.id)}
+              onClick={() => v.available && setSelectedVariationId(v.id)}
+              disabled={!v.available}
               className={clsx(
                 "w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition-all",
-                selectedVariationId === v.id
-                  ? "border-gold bg-amber-50 ring-2 ring-gold"
-                  : "border-brand-border hover:border-gold"
+                !v.available
+                  ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                  : selectedVariationId === v.id
+                    ? "border-gold bg-amber-50 ring-2 ring-gold"
+                    : "border-brand-border hover:border-gold"
               )}
             >
-              <span className="font-medium text-ink-primary">{v.name}</span>
-              <span className="font-bold text-gold">
+              <div className="flex items-center gap-2">
+                <span
+                  className={clsx(
+                    "font-medium",
+                    !v.available ? "text-ink-muted" : "text-ink-primary"
+                  )}
+                >
+                  {v.name}
+                </span>
+                {!v.available && (
+                  <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
+                    Esgotado
+                  </span>
+                )}
+              </div>
+              <span
+                className={clsx(
+                  "font-bold",
+                  !v.available ? "text-ink-muted" : "text-gold"
+                )}
+              >
                 R$ {v.price.toFixed(2).replace(".", ",")}
               </span>
             </button>
@@ -83,14 +106,14 @@ export function VariationModal({ product, onClose }: Props) {
         <p className="text-sm text-ink-secondary mb-3 font-medium">
           Quantidade:
         </p>
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-center gap-6 mb-6">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             className="w-10 h-10 rounded-full border border-brand-border flex items-center justify-center text-lg font-bold text-ink-secondary hover:border-gold transition-colors"
           >
             −
           </button>
-          <span className="text-lg font-bold text-ink-primary w-6 text-center">
+          <span className="text-xl font-bold text-ink-primary w-8 text-center">
             {qty}
           </span>
           <button

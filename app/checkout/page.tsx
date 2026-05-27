@@ -11,7 +11,8 @@ type Payment = "pix" | "card" | "cash";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, clearCart, removeFromCart, updateQty } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -24,7 +25,12 @@ export default function CheckoutPage() {
   const [changeFor, setChangeFor] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const deliveryFee = delivery === "entrega" ? CONFIG.DELIVERY_FEE : 0;
+  const deliveryFee =
+    delivery === "entrega"
+      ? subtotal >= CONFIG.FREE_DELIVERY_ABOVE
+        ? 0
+        : CONFIG.DELIVERY_FEE
+      : 0;
   const total = subtotal + deliveryFee;
 
   useEffect(() => {
@@ -46,10 +52,8 @@ export default function CheckoutPage() {
 
   function handleSubmit() {
     if (!validate()) return;
-
     const paymentLabel =
       CONFIG.PAYMENT_OPTIONS.find((p) => p.id === payment)?.label ?? "";
-
     const order = {
       items,
       subtotal,
@@ -66,7 +70,6 @@ export default function CheckoutPage() {
       needsChange,
       changeFor: changeFor ? Number(changeFor) : undefined
     };
-
     sessionStorage.setItem("tabacaria_order", JSON.stringify(order));
     router.push("/confirmacao");
   }
@@ -81,6 +84,88 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-brand-bg pb-40">
+      {/* Drawer editar carrinho */}
+      {cartOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setCartOpen(false)}
+          />
+          <div className="relative bg-white rounded-t-2xl p-6 h-[60vh] flex flex-col animate-slide-up">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg font-bold text-ink-primary">
+                Editar Pedido
+              </h2>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="text-ink-muted hover:text-ink-primary text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 space-y-3">
+              {items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-brand-bg rounded-xl p-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-ink-primary truncate">
+                      {item.name}
+                    </p>
+                    {item.variation && (
+                      <p className="text-xs text-ink-muted">{item.variation}</p>
+                    )}
+                    <p className="text-xs font-bold text-gold mt-0.5">
+                      R${" "}
+                      {(item.unitPrice * item.qty).toFixed(2).replace(".", ",")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() =>
+                        updateQty(item.productId, item.qty - 1, item.variation)
+                      }
+                      className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-sm font-bold text-ink-secondary hover:border-red-400 hover:text-red-400 transition-colors"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.qty}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val))
+                          updateQty(item.productId, val, item.variation);
+                      }}
+                      className="w-10 text-center text-sm font-bold text-ink-primary bg-white border border-brand-border rounded-lg py-1 outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <button
+                      onClick={() =>
+                        updateQty(item.productId, item.qty + 1, item.variation)
+                      }
+                      className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-sm font-bold text-ink-secondary hover:border-gold hover:text-gold transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    onClick={() =>
+                      removeFromCart(item.productId, item.variation)
+                    }
+                    className="text-ink-muted hover:text-red-500 transition-colors text-lg"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-brand-border px-4 h-14 flex items-center gap-3">
         <button
@@ -100,17 +185,65 @@ export default function CheckoutPage() {
           <h2 className="font-semibold text-ink-primary mb-3">
             Resumo do Pedido
           </h2>
+
           {items.map((item, i) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span className="text-ink-secondary">
-                {item.qty}x {item.name}
-                {item.variation ? ` (${item.variation})` : ""}
-              </span>
-              <span className="font-medium text-ink-primary">
-                R$ {(item.unitPrice * item.qty).toFixed(2).replace(".", ",")}
-              </span>
+            <div
+              key={i}
+              className="flex items-center gap-3 bg-white rounded-xl p-3"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm text-ink-primary truncate">
+                  {item.name}
+                </p>
+                {item.variation && (
+                  <p className="text-xs text-ink-muted">{item.variation}</p>
+                )}
+                <p className="text-xs font-bold text-gold mt-0.5">
+                  R$ {(item.unitPrice * item.qty).toFixed(2).replace(".", ",")}
+                </p>
+              </div>
+
+              {/* Quantidade inline */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() =>
+                    updateQty(item.productId, item.qty - 1, item.variation)
+                  }
+                  className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-sm font-bold text-ink-secondary hover:border-red-400 hover:text-red-400 transition-colors"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.qty}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (!isNaN(val))
+                      updateQty(item.productId, val, item.variation);
+                  }}
+                  className="w-10 text-center text-sm font-bold text-ink-primary bg-brand-bg border border-brand-border rounded-lg py-1 outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button
+                  onClick={() =>
+                    updateQty(item.productId, item.qty + 1, item.variation)
+                  }
+                  className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-sm font-bold text-ink-secondary hover:border-gold hover:text-gold transition-colors"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Remover */}
+              <button
+                onClick={() => removeFromCart(item.productId, item.variation)}
+                className="text-ink-muted hover:text-red-500 transition-colors text-lg"
+              >
+                🗑️
+              </button>
             </div>
           ))}
+
           <div className="border-t border-amber-200 pt-2 mt-2 space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-ink-secondary">Subtotal</span>
@@ -118,12 +251,29 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-ink-secondary">Taxa de entrega</span>
-              <span>
-                {deliveryFee > 0
-                  ? `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`
-                  : "Grátis"}
+              <span
+                className={
+                  deliveryFee === 0 && delivery === "entrega"
+                    ? "text-green-600 font-medium"
+                    : ""
+                }
+              >
+                {delivery === "retirada"
+                  ? "Grátis"
+                  : deliveryFee === 0
+                    ? "🎉 Grátis"
+                    : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}
               </span>
             </div>
+            {delivery === "entrega" && deliveryFee > 0 && (
+              <p className="text-xs text-amber-600 mt-1">
+                Faltam R${" "}
+                {(CONFIG.FREE_DELIVERY_ABOVE - subtotal)
+                  .toFixed(2)
+                  .replace(".", ",")}{" "}
+                para entrega grátis!
+              </p>
+            )}
             <div className="flex justify-between font-bold text-gold text-base pt-1">
               <span>Total</span>
               <span>R$ {total.toFixed(2).replace(".", ",")}</span>
@@ -250,14 +400,14 @@ export default function CheckoutPage() {
                 <button
                   onClick={() => setNeedsChange((n) => !n)}
                   className={clsx(
-                    "w-12 h-6 rounded-full transition-colors relative",
+                    "w-11 h-6 rounded-full transition-colors relative",
                     needsChange ? "bg-gold" : "bg-gray-200"
                   )}
                 >
                   <span
                     className={clsx(
-                      "absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform",
-                      needsChange ? "translate-x-7" : "translate-x-1"
+                      "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
+                      needsChange ? "translate-x-5" : "translate-x-0"
                     )}
                   />
                 </button>
