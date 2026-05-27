@@ -33,6 +33,8 @@ export function ProductForm({ productId }: Props) {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(isEdit);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -49,6 +51,7 @@ export function ProductForm({ productId }: Props) {
         setCategoryId(p.categoryId);
         setPrice(String(p.price));
         setAvailable(p.available);
+        setImageUrl(p.imageUrl ?? null);
         if (p.variations?.length > 0) {
           setHasVariations(true);
           setVariations(
@@ -99,6 +102,7 @@ export function ProductForm({ productId }: Props) {
       name,
       categoryId,
       available,
+      imageUrl,
       price: hasVariations
         ? Math.min(...variations.map((v) => Number(v.price)))
         : Number(price),
@@ -122,6 +126,18 @@ export function ProductForm({ productId }: Props) {
       setErrors({ global: "Erro ao salvar produto" });
     }
     setLoading(false);
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    const data = await res.json();
+    setImageUrl(data.url);
+    setUploading(false);
   }
 
   const inputClass = (field: string) =>
@@ -170,6 +186,44 @@ export function ProductForm({ productId }: Props) {
           {errors.name && (
             <p className="text-red-500 text-xs mt-1">{errors.name}</p>
           )}
+        </div>
+        {/* Upload de imagem */}
+        <div>
+          <label className="text-sm font-medium text-ink-secondary mb-1 block">
+            Foto do produto
+          </label>
+          <div className="border-2 border-dashed border-brand-border rounded-xl p-4 text-center">
+            {imageUrl ? (
+              <div>
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg mb-2"
+                />
+                <button
+                  onClick={() => setImageUrl(null)}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Remover foto
+                </button>
+              </div>
+            ) : (
+              <label className="cursor-pointer block">
+                <div className="text-3xl mb-2">📷</div>
+                <p className="text-sm text-ink-muted mb-1">
+                  {uploading ? "Enviando..." : "Clique para enviar uma foto"}
+                </p>
+                <p className="text-xs text-ink-muted">JPG, PNG ou WEBP</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
         </div>
 
         {/* Categoria */}
