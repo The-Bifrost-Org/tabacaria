@@ -174,7 +174,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-brand-bg">
       {/* Header */}
-      <div className="bg-white border-b border-brand-border px-4 h-16 flex items-center justify-between sticky top-0 z-40">
+      <div className="bg-white border-b border-brand-border px-6 h-16 flex items-center justify-between sticky top-0 z-40">
         <h1 className="font-display text-lg font-bold text-ink-primary">
           🏪 Painel Admin
         </h1>
@@ -186,310 +186,325 @@ export default function AdminPage() {
         </button>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Cards resumo */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-brand-border p-4">
-            <p className="text-3xl font-bold text-ink-primary">
-              {products.length}
-            </p>
-            <p className="text-sm text-ink-muted mt-1">Produtos</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-brand-border p-4">
-            <p
-              className={clsx(
-                "text-3xl font-bold",
-                totalEsgotados > 0 ? "text-amber-500" : "text-green-500"
-              )}
-            >
-              {totalEsgotados}
-            </p>
-            <p className="text-sm text-ink-muted mt-1">Esgotados</p>
-          </div>
-        </div>
-        {/* Feedbacks */}
-        <section className="bg-white rounded-2xl border border-brand-border overflow-hidden">
-          <button
-            onClick={() => setShowFeedbacks((s) => !s)}
-            className="w-full flex items-center justify-between p-4 hover:bg-brand-bg transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-ink-primary">
-                💬 Sugestões e Feedbacks
-              </span>
-              {feedbacks.length > 0 && (
-                <span className="bg-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {feedbacks.length}
-                </span>
-              )}
-            </div>
-            <span className="text-ink-muted text-sm">
-              {showFeedbacks ? "▲" : "▼"}
-            </span>
-          </button>
-
-          {showFeedbacks && (
-            <div className="border-t border-brand-border divide-y divide-brand-border">
-              {feedbacks.length === 0 ? (
-                <p className="text-sm text-ink-muted p-4 text-center">
-                  Nenhuma mensagem ainda
+      <div className="max-w-screen-xl mx-auto px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* ═══════════════════════════ */}
+          {/* COLUNA ESQUERDA            */}
+          {/* ═══════════════════════════ */}
+          <div className="w-full lg:w-80 flex-shrink-0 space-y-4">
+            {/* Cards resumo */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl border border-brand-border p-4">
+                <p className="text-3xl font-bold text-ink-primary">
+                  {products.length}
                 </p>
-              ) : (
-                feedbacks.map((f) => (
-                  <div key={f.id} className="p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={clsx(
-                          "text-xs font-medium px-2 py-0.5 rounded-full",
-                          f.type === "sugestao"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-green-100 text-green-700"
-                        )}
-                      >
-                        {f.type === "sugestao" ? "💡 Sugestão" : "⭐ Feedback"}
-                      </span>
-                      {f.name && (
-                        <span className="text-xs text-ink-muted">{f.name}</span>
-                      )}
-                      <span className="text-xs text-ink-muted ml-auto">
-                        {new Date(f.createdAt).toLocaleDateString("pt-BR")}
-                      </span>
-                    </div>
-                    <p className="text-sm text-ink-primary">{f.message}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Categorias */}
-        <section className="bg-white rounded-2xl border border-brand-border p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-ink-primary">Categorias</h2>
-            <button
-              onClick={() => setShowCatForm((s) => !s)}
-              className="text-sm text-gold hover:text-gold-dark font-medium transition-colors"
-            >
-              + Nova
-            </button>
-          </div>
-          {showCatForm && (
-            <div className="flex gap-2 animate-fade-in">
-              <input
-                placeholder="Nome da categoria"
-                value={newCatName}
-                onChange={(e) => setNewCatName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addCategory()}
-                className="flex-1 border border-brand-border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold"
-              />
-              <button
-                onClick={addCategory}
-                disabled={catLoading}
-                className="bg-gold hover:bg-gold-dark text-white px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
-              >
-                {catLoading ? "..." : "Salvar"}
-              </button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-3 py-1"
-              >
-                <span className="text-sm text-ink-primary">{cat.name}</span>
-                <button
-                  onClick={() => deleteCategory(cat.id)}
-                  className="text-ink-muted hover:text-red-500 ml-1 text-xs"
+                <p className="text-sm text-ink-muted mt-1">Produtos</p>
+              </div>
+              <div className="bg-white rounded-2xl border border-brand-border p-4">
+                <p
+                  className={clsx(
+                    "text-3xl font-bold",
+                    totalEsgotados > 0 ? "text-amber-500" : "text-green-500"
+                  )}
                 >
-                  ✕
+                  {totalEsgotados}
+                </p>
+                <p className="text-sm text-ink-muted mt-1">Esgotados</p>
+              </div>
+            </div>
+
+            {/* Feedbacks */}
+            <section className="bg-white rounded-2xl border border-brand-border overflow-hidden">
+              <button
+                onClick={() => setShowFeedbacks((s) => !s)}
+                className="w-full flex items-center justify-between p-4 hover:bg-brand-bg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-ink-primary">
+                    💬 Feedbacks
+                  </span>
+                  {feedbacks.length > 0 && (
+                    <span className="bg-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {feedbacks.length}
+                    </span>
+                  )}
+                </div>
+                <span className="text-ink-muted text-sm">
+                  {showFeedbacks ? "▲" : "▼"}
+                </span>
+              </button>
+              {showFeedbacks && (
+                <div className="border-t border-brand-border divide-y divide-brand-border max-h-64 overflow-y-auto">
+                  {feedbacks.length === 0 ? (
+                    <p className="text-sm text-ink-muted p-4 text-center">
+                      Nenhuma mensagem ainda
+                    </p>
+                  ) : (
+                    feedbacks.map((f) => (
+                      <div key={f.id} className="p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={clsx(
+                              "text-xs font-medium px-2 py-0.5 rounded-full",
+                              f.type === "sugestao"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-green-100 text-green-700"
+                            )}
+                          >
+                            {f.type === "sugestao"
+                              ? "💡 Sugestão"
+                              : "⭐ Feedback"}
+                          </span>
+                          {f.name && (
+                            <span className="text-xs text-ink-muted">
+                              {f.name}
+                            </span>
+                          )}
+                          <span className="text-xs text-ink-muted ml-auto">
+                            {new Date(f.createdAt).toLocaleDateString("pt-BR")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-ink-primary">{f.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* Categorias */}
+            <section className="bg-white rounded-2xl border border-brand-border p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-ink-primary">Categorias</h2>
+                <button
+                  onClick={() => setShowCatForm((s) => !s)}
+                  className="text-sm text-gold hover:text-gold-dark font-medium transition-colors"
+                >
+                  + Nova
                 </button>
               </div>
-            ))}
-            {categories.length === 0 && (
-              <p className="text-sm text-ink-muted">Nenhuma categoria</p>
-            )}
-          </div>
-        </section>
-        <CouponManager />
-        {/* Horários */}
-        <StoreHoursManager />
-
-        {/* Busca + novo */}
-        <div className="flex gap-3">
-          <input
-            placeholder="🔍 Buscar produto..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold"
-          />
-          <button
-            onClick={() => router.push("/admin/produto/novo")}
-            className="bg-gold hover:bg-gold-dark text-white font-semibold px-4 py-3 rounded-xl text-sm whitespace-nowrap"
-          >
-            + Novo
-          </button>
-        </div>
-
-        {/* Lista */}
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-brand-border p-4 animate-pulse h-24"
-              />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-16 text-ink-muted">
-            <p className="text-4xl mb-3">📦</p>
-            <p className="text-sm">Nenhum produto encontrado</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-2xl border border-brand-border overflow-hidden"
-              >
-                {/* Linha principal */}
-                <div className="flex items-center gap-3 p-4">
-                  {/* Foto */}
-                  <div className="w-14 h-14 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-2xl">
-                    {product.imageUrl ? (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      "🪄"
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-ink-primary truncate">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-ink-muted">
-                      {product.category.name}
-                    </p>
-                    <p className="text-xs font-bold text-gold mt-0.5">
-                      R$ {product.price.toFixed(2).replace(".", ",")}
-                      {product.variations.length > 0 &&
-                        ` · ${product.variations.length} variações`}
-                    </p>
-                  </div>
-
-                  {/* Ações direita */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    {/* Toggle produto disponível */}
-                    <div className="flex flex-col items-center gap-1">
-                      <Toggle
-                        on={product.available}
-                        onToggle={() =>
-                          toggleAvailable(product.id, product.available)
-                        }
-                      />
-                      <span className="text-xs text-ink-muted">
-                        {product.available ? "Ativo" : "Esgotado"}
-                      </span>
-                    </div>
-
-                    {/* Botões */}
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() =>
-                          router.push(`/admin/produto/${product.id}`)
-                        }
-                        className="text-xs bg-amber-50 hover:bg-amber-100 text-gold font-medium px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button
-                        onClick={() => deleteProduct(product.id)}
-                        className="text-xs bg-red-50 hover:bg-red-100 text-red-500 font-medium px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        🗑️ Excluir
-                      </button>
-                    </div>
-                  </div>
+              {showCatForm && (
+                <div className="flex gap-2 animate-fade-in">
+                  <input
+                    placeholder="Nome da categoria"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                    className="flex-1 border border-brand-border rounded-xl px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                  <button
+                    onClick={addCategory}
+                    disabled={catLoading}
+                    className="bg-gold hover:bg-gold-dark text-white px-3 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
+                  >
+                    {catLoading ? "..." : "Salvar"}
+                  </button>
                 </div>
-
-                {/* Variações — expansível */}
-                {product.variations.length > 0 && (
-                  <>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-3 py-1"
+                  >
+                    <span className="text-sm text-ink-primary">{cat.name}</span>
                     <button
-                      onClick={() =>
-                        setExpanded(expanded === product.id ? null : product.id)
-                      }
-                      className="w-full flex items-center justify-between px-4 py-2 bg-brand-bg border-t border-brand-border text-xs text-ink-secondary hover:text-ink-primary transition-colors"
+                      onClick={() => deleteCategory(cat.id)}
+                      className="text-ink-muted hover:text-red-500 ml-1 text-xs"
                     >
-                      <span>
-                        {product.variations.filter((v) => !v.available).length >
-                        0
-                          ? `⚠️ ${product.variations.filter((v) => !v.available).length} variação(ões) esgotada(s)`
-                          : "✅ Todas variações disponíveis"}
-                      </span>
-                      <span>
-                        {expanded === product.id
-                          ? "▲ Fechar"
-                          : "▼ Gerenciar variações"}
-                      </span>
+                      ✕
                     </button>
-
-                    {expanded === product.id && (
-                      <div className="px-4 pb-4 space-y-2 animate-fade-in">
-                        {product.variations.map((v) => (
-                          <div
-                            key={v.id}
-                            className="flex items-center justify-between bg-brand-bg rounded-xl px-3 py-2"
-                          >
-                            <div>
-                              <p
-                                className={clsx(
-                                  "text-sm font-medium",
-                                  !v.available && "line-through text-ink-muted"
-                                )}
-                              >
-                                {v.name}
-                              </p>
-                              <p className="text-xs text-gold font-bold">
-                                R$ {v.price.toFixed(2).replace(".", ",")}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={clsx(
-                                  "text-xs font-medium",
-                                  v.available
-                                    ? "text-green-600"
-                                    : "text-red-400"
-                                )}
-                              >
-                                {v.available ? "Disponível" : "Esgotado"}
-                              </span>
-                              <Toggle
-                                on={v.available}
-                                onToggle={() =>
-                                  toggleVariation(product.id, v.id, v.available)
-                                }
-                                size="sm"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <p className="text-sm text-ink-muted">Nenhuma categoria</p>
                 )}
               </div>
-            ))}
+            </section>
+
+            {/* Cupons */}
+            <CouponManager />
+
+            {/* Horários */}
+            <StoreHoursManager />
           </div>
-        )}
+
+          {/* ═══════════════════════════ */}
+          {/* COLUNA DIREITA — PRODUTOS  */}
+          {/* ═══════════════════════════ */}
+          <div className="flex-1 min-w-0 space-y-4">
+            {/* Busca + novo */}
+            <div className="flex gap-3">
+              <input
+                placeholder="🔍 Buscar produto..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold bg-white"
+              />
+              <button
+                onClick={() => router.push("/admin/produto/novo")}
+                className="bg-gold hover:bg-gold-dark text-white font-semibold px-5 py-3 rounded-xl text-sm whitespace-nowrap transition-colors"
+              >
+                + Novo Produto
+              </button>
+            </div>
+
+            {/* Lista */}
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl border border-brand-border p-4 animate-pulse h-24"
+                  />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-24 text-ink-muted bg-white rounded-2xl border border-brand-border">
+                <p className="text-4xl mb-3">📦</p>
+                <p className="text-sm">Nenhum produto encontrado</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filtered.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-2xl border border-brand-border overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 p-4">
+                      <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-2xl">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          "🪄"
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-ink-primary truncate">
+                          {product.name}
+                        </p>
+                        <p className="text-xs text-ink-muted">
+                          {product.category.name}
+                        </p>
+                        <p className="text-xs font-bold text-gold mt-0.5">
+                          R$ {product.price.toFixed(2).replace(".", ",")}
+                          {product.variations.length > 0 &&
+                            ` · ${product.variations.length} variações`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="flex flex-col items-center gap-1">
+                          <Toggle
+                            on={product.available}
+                            onToggle={() =>
+                              toggleAvailable(product.id, product.available)
+                            }
+                          />
+                          <span className="text-xs text-ink-muted">
+                            {product.available ? "Ativo" : "Esgotado"}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              router.push(`/admin/produto/${product.id}`)
+                            }
+                            className="text-xs bg-amber-50 hover:bg-amber-100 text-gold font-medium px-3 py-2 rounded-lg transition-colors"
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            onClick={() => deleteProduct(product.id)}
+                            className="text-xs bg-red-50 hover:bg-red-100 text-red-500 font-medium px-3 py-2 rounded-lg transition-colors"
+                          >
+                            🗑️ Excluir
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {product.variations.length > 0 && (
+                      <>
+                        <button
+                          onClick={() =>
+                            setExpanded(
+                              expanded === product.id ? null : product.id
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-4 py-2 bg-brand-bg border-t border-brand-border text-xs text-ink-secondary hover:text-ink-primary transition-colors"
+                        >
+                          <span>
+                            {product.variations.filter((v) => !v.available)
+                              .length > 0
+                              ? `⚠️ ${product.variations.filter((v) => !v.available).length} variação(ões) esgotada(s)`
+                              : "✅ Todas variações disponíveis"}
+                          </span>
+                          <span>
+                            {expanded === product.id
+                              ? "▲ Fechar"
+                              : "▼ Gerenciar variações"}
+                          </span>
+                        </button>
+                        {expanded === product.id && (
+                          <div className="px-4 pb-4 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2 animate-fade-in">
+                            {product.variations.map((v) => (
+                              <div
+                                key={v.id}
+                                className="flex items-center justify-between bg-brand-bg rounded-xl px-3 py-2"
+                              >
+                                <div>
+                                  <p
+                                    className={clsx(
+                                      "text-sm font-medium",
+                                      !v.available &&
+                                        "line-through text-ink-muted"
+                                    )}
+                                  >
+                                    {v.name}
+                                  </p>
+                                  <p className="text-xs text-gold font-bold">
+                                    R$ {v.price.toFixed(2).replace(".", ",")}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={clsx(
+                                      "text-xs font-medium",
+                                      v.available
+                                        ? "text-green-600"
+                                        : "text-red-400"
+                                    )}
+                                  >
+                                    {v.available ? "Disponível" : "Esgotado"}
+                                  </span>
+                                  <Toggle
+                                    on={v.available}
+                                    onToggle={() =>
+                                      toggleVariation(
+                                        product.id,
+                                        v.id,
+                                        v.available
+                                      )
+                                    }
+                                    size="sm"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
