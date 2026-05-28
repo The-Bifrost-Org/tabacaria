@@ -22,12 +22,18 @@ export function buildWhatsAppMessage(order: Order): string {
       ? `Troco para: R$ ${fmt(order.changeFor)}`
       : "";
 
+  const couponPart =
+    order.discountAmount && order.discountAmount > 0
+      ? `Cupom (${order.couponCode}): - R$ ${fmt(order.discountAmount)}`
+      : "";
+
   const lines = [
     "Olá! Gostaria de fazer o seguinte pedido:",
     "",
     itemLines,
     "",
     `Subtotal: R$ ${fmt(order.subtotal)}`,
+    couponPart,
     `Entrega: ${order.delivery === "entrega" ? `R$ ${fmt(order.deliveryFee)}` : "Retirada no balcão"}`,
     `Total: R$ ${fmt(order.total)}`,
     "",

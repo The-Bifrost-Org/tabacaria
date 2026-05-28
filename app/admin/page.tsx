@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
+import { CouponManager } from "@/components/admin/CouponManager";
 
 interface Variation {
   id: string;
@@ -310,6 +311,7 @@ export default function AdminPage() {
             )}
           </div>
         </section>
+        <CouponManager />
 
         {/* Busca + novo */}
         <div className="flex gap-3">

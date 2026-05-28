@@ -24,14 +24,19 @@ export default function CheckoutPage() {
   const [needsChange, setNeedsChange] = useState(false);
   const [changeFor, setChangeFor] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [couponCode, setCouponCode] = useState("");
+  const [couponData, setCouponData] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
 
+  const discountAmount = couponData?.discountAmount ?? 0;
   const deliveryFee =
     delivery === "entrega"
-      ? subtotal >= CONFIG.FREE_DELIVERY_ABOVE
+      ? subtotal - discountAmount >= CONFIG.FREE_DELIVERY_ABOVE
         ? 0
         : CONFIG.DELIVERY_FEE
       : 0;
-  const total = subtotal + deliveryFee;
+  const total = subtotal - discountAmount + deliveryFee;
 
   useEffect(() => {
     if (items.length === 0) router.replace("/");
@@ -50,15 +55,28 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!validate()) return;
+    if (couponData) {
+      await fetch(`/api/coupons/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: couponData.code,
+          subtotal,
+          increment: true
+        })
+      });
+    }
     const paymentLabel =
       CONFIG.PAYMENT_OPTIONS.find((p) => p.id === payment)?.label ?? "";
     const order = {
       items,
       subtotal,
+      discountAmount,
       deliveryFee,
       total,
+      couponCode: couponData?.code,
       name,
       phone,
       delivery,
@@ -81,6 +99,27 @@ export default function CheckoutPage() {
         ? "border-red-400 focus:border-red-400"
         : "border-brand-border focus:border-gold"
     );
+
+  async function handleApplyCoupon() {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponData(null);
+
+    const res = await fetch("/api/coupons/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: couponCode, subtotal })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setCouponData(data);
+    } else {
+      setCouponError(data.error);
+    }
+    setCouponLoading(false);
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg pb-40">
@@ -249,6 +288,14 @@ export default function CheckoutPage() {
               <span className="text-ink-secondary">Subtotal</span>
               <span>R$ {subtotal.toFixed(2).replace(".", ",")}</span>
             </div>
+            {couponData && (
+              <div className="flex justify-between text-sm text-green-600 font-medium">
+                <span>Desconto ({couponData.code})</span>
+                <span>
+                  - R$ {couponData.discountAmount.toFixed(2).replace(".", ",")}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-ink-secondary">Taxa de entrega</span>
               <span
@@ -421,6 +468,59 @@ export default function CheckoutPage() {
                   onChange={(e) => setChangeFor(e.target.value)}
                 />
               )}
+            </div>
+          )}
+        </section>
+        {/* Cupom */}
+        <section className="space-y-3">
+          <h2 className="font-semibold text-ink-primary">Cupom de Desconto</h2>
+          <div className="flex gap-2">
+            <input
+              placeholder="Código do cupom"
+              value={couponCode}
+              onChange={(e) => {
+                setCouponCode(e.target.value.toUpperCase());
+                setCouponData(null);
+                setCouponError("");
+              }}
+              disabled={!!couponData}
+              className="flex-1 border border-brand-border rounded-xl px-4 py-3 text-sm outline-none focus:border-gold font-mono tracking-widest disabled:bg-gray-50 disabled:text-ink-muted"
+            />
+            {couponData ? (
+              <button
+                onClick={() => {
+                  setCouponData(null);
+                  setCouponCode("");
+                }}
+                className="px-4 py-3 rounded-xl border border-red-200 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors"
+              >
+                Remover
+              </button>
+            ) : (
+              <button
+                onClick={handleApplyCoupon}
+                disabled={couponLoading || !couponCode.trim()}
+                className="px-4 py-3 rounded-xl bg-ink-primary text-white text-sm font-medium hover:bg-ink-secondary transition-colors disabled:opacity-50"
+              >
+                {couponLoading ? "..." : "Aplicar"}
+              </button>
+            )}
+          </div>
+
+          {couponError && <p className="text-red-500 text-xs">{couponError}</p>}
+
+          {couponData && (
+            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
+              <span className="text-green-600 text-lg">🎟️</span>
+              <div>
+                <p className="text-sm font-semibold text-green-700">
+                  {couponData.code} aplicado!
+                </p>
+                <p className="text-xs text-green-600">
+                  Desconto de R${" "}
+                  {couponData.discountAmount.toFixed(2).replace(".", ",")}
+                </p>
+              </div>
             </div>
           )}
         </section>

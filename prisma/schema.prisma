@@ -76,3 +76,16 @@ model ProductImage {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
+
+model Coupon {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  discount  Float // valor ou percentual
+  type      String // 'percent' ou 'fixed'
+  active    Boolean   @default(true)
+  maxUses   Int? // null = ilimitado
+  usedCount Int       @default(0)
+  expiresAt DateTime? // null = sem validade
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

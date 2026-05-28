@@ -24,6 +24,8 @@ export interface Order {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  discountAmount?: number;
+  couponCode?: string;
   name: string;
   phone: string;
   delivery: "retirada" | "entrega";
