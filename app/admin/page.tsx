@@ -39,6 +39,13 @@ export default function AdminPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [showFeedbacks, setShowFeedbacks] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "todos" | "ativos" | "esgotados"
+  >("todos");
+  const [sortBy, setSortBy] = useState<
+    "name" | "price_asc" | "price_desc" | "category"
+  >("name");
 
   useEffect(() => {
     fetchProducts();
@@ -136,9 +143,24 @@ export default function AdminPage() {
     router.push("/admin/login");
   }
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = products
+    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((p) =>
+      selectedCategory ? p.category.id === selectedCategory : true
+    )
+    .filter((p) => {
+      if (statusFilter === "ativos") return p.available;
+      if (statusFilter === "esgotados") return !p.available;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "price_asc") return a.price - b.price;
+      if (sortBy === "price_desc") return b.price - a.price;
+      if (sortBy === "category")
+        return a.category.name.localeCompare(b.category.name);
+      return 0;
+    });
   const totalEsgotados = products.filter((p) => !p.available).length;
 
   function Toggle({
@@ -348,6 +370,73 @@ export default function AdminPage() {
                 + Novo Produto
               </button>
             </div>
+
+            {/* Filtros */}
+            <div className="flex flex-wrap gap-2">
+              {/* Categoria */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="border border-brand-border rounded-xl px-3 py-2 text-sm outline-none focus:border-gold bg-white text-ink-secondary"
+              >
+                <option value="">Todas categorias</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status */}
+              {(["todos", "ativos", "esgotados"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={clsx(
+                    "px-3 py-2 rounded-xl border text-sm font-medium transition-colors",
+                    statusFilter === s
+                      ? "bg-ink-primary text-white border-ink-primary"
+                      : "bg-white border-brand-border text-ink-secondary hover:border-gold"
+                  )}
+                >
+                  {s === "todos"
+                    ? "📦 Todos"
+                    : s === "ativos"
+                      ? "✅ Ativos"
+                      : "⚠️ Esgotados"}
+                </button>
+              ))}
+
+              {/* Ordenação */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="border border-brand-border rounded-xl px-3 py-2 text-sm outline-none focus:border-gold bg-white text-ink-secondary ml-auto"
+              >
+                <option value="name">A-Z</option>
+                <option value="price_asc">Menor preço</option>
+                <option value="price_desc">Maior preço</option>
+                <option value="category">Categoria</option>
+              </select>
+            </div>
+
+            {/* Contador */}
+            <p className="text-xs text-ink-muted">
+              {filtered.length} produto{filtered.length !== 1 ? "s" : ""}{" "}
+              encontrado{filtered.length !== 1 ? "s" : ""}
+              {(search || selectedCategory || statusFilter !== "todos") && (
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setSelectedCategory("");
+                    setStatusFilter("todos");
+                  }}
+                  className="ml-2 text-gold hover:text-gold-dark underline"
+                >
+                  Limpar filtros
+                </button>
+              )}
+            </p>
 
             {/* Lista */}
             {loading ? (
