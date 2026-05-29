@@ -65,6 +65,7 @@ model Feedback {
   type      String // 'sugestao' ou 'feedback'
   message   String
   name      String?
+  rating    Int? // 1-5 estrelas (só para feedback)
   createdAt DateTime @default(now())
 }
 

@@ -235,64 +235,23 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Feedbacks */}
-            <section className="bg-white rounded-2xl border border-brand-border overflow-hidden">
-              <button
-                onClick={() => setShowFeedbacks((s) => !s)}
-                className="w-full flex items-center justify-between p-4 hover:bg-brand-bg transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-ink-primary">
-                    💬 Feedbacks
-                  </span>
-                  {feedbacks.length > 0 && (
-                    <span className="bg-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      {feedbacks.length}
-                    </span>
-                  )}
-                </div>
-                <span className="text-ink-muted text-sm">
-                  {showFeedbacks ? "▲" : "▼"}
+            {/* Feedbacks  */}
+            <button
+              onClick={() => router.push("/admin/feedbacks")}
+              className="w-full bg-white rounded-2xl border border-brand-border p-4 flex items-center justify-between hover:border-gold transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-ink-primary">
+                  💬 Feedbacks
                 </span>
-              </button>
-              {showFeedbacks && (
-                <div className="border-t border-brand-border divide-y divide-brand-border max-h-64 overflow-y-auto">
-                  {feedbacks.length === 0 ? (
-                    <p className="text-sm text-ink-muted p-4 text-center">
-                      Nenhuma mensagem ainda
-                    </p>
-                  ) : (
-                    feedbacks.map((f) => (
-                      <div key={f.id} className="p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={clsx(
-                              "text-xs font-medium px-2 py-0.5 rounded-full",
-                              f.type === "sugestao"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-green-100 text-green-700"
-                            )}
-                          >
-                            {f.type === "sugestao"
-                              ? "💡 Sugestão"
-                              : "⭐ Feedback"}
-                          </span>
-                          {f.name && (
-                            <span className="text-xs text-ink-muted">
-                              {f.name}
-                            </span>
-                          )}
-                          <span className="text-xs text-ink-muted ml-auto">
-                            {new Date(f.createdAt).toLocaleDateString("pt-BR")}
-                          </span>
-                        </div>
-                        <p className="text-sm text-ink-primary">{f.message}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </section>
+                {feedbacks.length > 0 && (
+                  <span className="bg-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {feedbacks.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-ink-muted text-sm">Ver todos →</span>
+            </button>
 
             {/* Categorias */}
             <section className="bg-white rounded-2xl border border-brand-border p-4 space-y-3">
