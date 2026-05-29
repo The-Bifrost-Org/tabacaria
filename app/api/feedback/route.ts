@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  const { type, message, name, honeypot } = await req.json();
+  const { type, message, name, rating, honeypot } = await req.json();
 
-  if (honeypot) {
-    return NextResponse.json({ ok: true });
-  }
+  if (honeypot) return NextResponse.json({ ok: true });
 
   if (!message?.trim()) {
     return NextResponse.json(
@@ -17,20 +15,19 @@ export async function POST(req: NextRequest) {
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
   const recent = await prisma.feedback.count({
-    where: {
+    where: { type, createdAt: { gte: oneHourAgo } }
+  });
+  if (recent >= 10) return NextResponse.json({ ok: true });
+
+  await prisma.feedback.create({
+    data: {
       type,
-      createdAt: { gte: oneHourAgo }
+      message,
+      name,
+      rating: type === "feedback" && rating ? Number(rating) : null
     }
   });
-
-  if (recent >= 10) {
-    return NextResponse.json({ ok: true });
-  }
-
-  const feedback = await prisma.feedback.create({
-    data: { type, message, name }
-  });
-  return NextResponse.json(feedback);
+  return NextResponse.json({ ok: true });
 }
 
 export async function GET() {
