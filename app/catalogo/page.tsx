@@ -1,34 +1,34 @@
-import { HeroBanner } from "@/components/landing/HeroBanner";
-import { FeaturedProducts } from "@/components/landing/FeaturedProducts";
-import { Brands } from "@/components/landing/Brands";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
-import { NavBar } from "@/components/landing/NavBar";
-import { StoreMap } from "@/components/landing/StoreMap";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import type { ProductWithRelations } from "@/types";
 import type { Category } from "@prisma/client";
-import { FlashSaleBanner } from "@/components/catalog/FlashSaleBanner";
+import { NavBar } from "@/components/landing/NavBar";
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function fetchData() {
+      const [productsRes, categoriesRes] = await Promise.all([
+        fetch("/api/products"),
+        fetch("/api/categories")
+      ]);
+      setProducts(await productsRes.json());
+      setCategories(await categoriesRes.json());
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
 
-export default function LandingPage() {
   return (
-    <main className="bg-brand-bg">
-      {/* Seções vão entrar aqui */}
+    <div className="min-h-screen bg-brand-bg pb-24">
       <Header />
       <NavBar />
-      <HeroBanner />
-      <FeaturedProducts />  
-      <Brands />
-      <StoreMap />
-    </main>
-    );
-}
-      <FlashSaleBanner />
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
           {Array.from({ length: 8 }).map((_, i) => (

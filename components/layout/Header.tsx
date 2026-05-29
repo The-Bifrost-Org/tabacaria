@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { CONFIG } from "@/lib/config";
 
 interface StoreHour {
@@ -60,9 +61,12 @@ function useStoreStatus() {
 
 export function Header() {
   const { status, message } = useStoreStatus();
+  const pathname = usePathname();
+
+  const isLanding = pathname === "/";
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-brand-border shadow-sm">
+    <header className="sticky top-0 z-40 bg-white">
       <div className="px-4 h-16 flex items-center justify-between">
         {/* Badge de status — esquerda */}
         <div className="w-24 flex-shrink-0">
@@ -87,23 +91,23 @@ export function Header() {
         </div>
 
         {/* Logo — centro */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
           <Image
             src="/logo.png"
             alt={CONFIG.STORE_NAME}
             width={40}
             height={40}
-            className="object-contain"
+            className="object-contain flex-shrink-0"
           />
-          <div className="text-center">
-            <h1 className="font-display text-xl font-bold text-ink-primary leading-tight">
+          <div className="text-center min-w-0">
+            <h1 className="font-display text-xl font-bold text-ink-primary leading-tight whitespace-nowrap">
               {CONFIG.STORE_NAME}
             </h1>
             <p className="text-xs text-ink-muted">{CONFIG.STORE_TAGLINE}</p>
           </div>
         </div>
 
-        {/* Horário — direita */}
+               {/* Horário — direita */}
         <div className="w-24 flex-shrink-0 flex justify-end">
           {message && (
             <span className="text-xs text-ink-muted text-right leading-tight">

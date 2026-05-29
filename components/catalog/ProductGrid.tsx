@@ -15,10 +15,12 @@ export function ProductGrid({ products, categories }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    if (!selected) return products;
-    return products.filter((p) => p.category.slug === selected);
-  }, [products, selected]);
+     const list = selected
+       ? products.filter((p) => p.category.slug === selected)
+       : products;
 
+     return [...list].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  }, [products, selected]);
   return (
     <>
       <CategoryFilter
