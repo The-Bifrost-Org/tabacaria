@@ -252,6 +252,16 @@ export default function AdminPage() {
               </div>
               <span className="text-ink-muted text-sm">Ver todos →</span>
             </button>
+            {/* Flash Sale */}
+            <button
+              onClick={() => router.push("/admin/flash-sale")}
+              className="w-full bg-white rounded-2xl border border-brand-border p-4 flex items-center justify-between hover:border-gold transition-colors"
+            >
+              <span className="font-semibold text-ink-primary">
+                ⚡ Promoções Relâmpago
+              </span>
+              <span className="text-ink-muted text-sm">Gerenciar →</span>
+            </button>
 
             {/* Categorias */}
             <section className="bg-white rounded-2xl border border-brand-border p-4 space-y-3">
