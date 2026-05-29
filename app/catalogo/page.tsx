@@ -30,7 +30,6 @@ export default function CatalogPage() {
     <div className="min-h-screen bg-brand-bg pb-24">
       <Header />
       <NavBar />
-      <FlashSaleBanner />
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -49,6 +48,7 @@ export default function CatalogPage() {
       ) : (
         <ProductGrid products={products} categories={categories} />
       )}
+      <FlashSaleBanner />
     </div>
   );
 }

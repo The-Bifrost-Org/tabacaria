@@ -41,6 +41,7 @@ export default function FlashSalePage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selSearch, setSelSearch] = useState("");
 
   // Form states
   const [title, setTitle] = useState("");
@@ -358,35 +359,46 @@ export default function FlashSalePage() {
                     Selecione os produtos
                   </h3>
 
-                  {/* Filtro por categoria */}
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                    <button
-                      onClick={() => setSelCategory("")}
-                      className={clsx(
-                        "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                        selCategory === ""
-                          ? "bg-ink-primary text-white border-ink-primary"
-                          : "bg-white border-brand-border text-ink-secondary hover:border-gold"
-                      )}
-                    >
-                      Todos
-                    </button>
-                    {[...new Set(products.map((p) => p.category?.name))]
-                      .filter(Boolean)
-                      .map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => setSelCategory(cat)}
-                          className={clsx(
-                            "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                            selCategory === cat
-                              ? "bg-ink-primary text-white border-ink-primary"
-                              : "bg-white border-brand-border text-ink-secondary hover:border-gold"
-                          )}
-                        >
-                          {cat}
-                        </button>
-                      ))}
+                  {/* Filtro por categoria + busca */}
+                  <div className="space-y-2">
+                    {/* Busca por texto */}
+                    <input
+                      placeholder="🔍 Buscar produto..."
+                      value={selSearch}
+                      onChange={(e) => setSelSearch(e.target.value)}
+                      className="w-full border border-brand-border rounded-xl px-3 py-2 text-sm outline-none focus:border-gold"
+                    />
+
+                    {/* Categorias com scroll */}
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                      <button
+                        onClick={() => setSelCategory("")}
+                        className={clsx(
+                          "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                          selCategory === ""
+                            ? "bg-ink-primary text-white border-ink-primary"
+                            : "bg-white border-brand-border text-ink-secondary hover:border-gold"
+                        )}
+                      >
+                        Todos
+                      </button>
+                      {[...new Set(products.map((p: any) => p.category?.name))]
+                        .filter(Boolean)
+                        .map((cat: any) => (
+                          <button
+                            key={cat}
+                            onClick={() => setSelCategory(cat)}
+                            className={clsx(
+                              "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                              selCategory === cat
+                                ? "bg-ink-primary text-white border-ink-primary"
+                                : "bg-white border-brand-border text-ink-secondary hover:border-gold"
+                            )}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                    </div>
                   </div>
                 </div>
 
@@ -396,6 +408,16 @@ export default function FlashSalePage() {
                     {products
                       .filter((p) =>
                         selCategory ? p.category?.name === selCategory : true
+                      )
+                      .filter((p) =>
+                        selCategory ? p.category?.name === selCategory : true
+                      )
+                      .filter((p) =>
+                        selSearch
+                          ? p.name
+                              .toLowerCase()
+                              .includes(selSearch.toLowerCase())
+                          : true
                       )
                       .map((p) => {
                         const img = p.images?.[0]?.url ?? p.imageUrl;
