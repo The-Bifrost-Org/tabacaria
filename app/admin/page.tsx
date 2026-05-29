@@ -22,6 +22,7 @@ interface Product {
   name: string;
   price: number;
   available: boolean;
+  featured: boolean;
   imageUrl: string | null;
   category: Category;
   variations: Variation[];
@@ -85,6 +86,17 @@ export default function AdminPage() {
     setShowCatForm(false);
     fetchCategories();
     setCatLoading(false);
+  }
+
+  async function toggleFeatured(id: string, current: boolean) {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, featured: !current } : p))
+    );
+    await fetch(`/api/products/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured: !current })
+    });
   }
 
   async function deleteCategory(id: string) {
@@ -455,6 +467,30 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-4 flex-shrink-0">
+                        {/* Toggle destaque */}
+                        <div className="flex flex-col items-center gap-1">
+                          <button
+                            onClick={() =>
+                              toggleFeatured(product.id, product.featured)
+                            }
+                            className={clsx(
+                              "w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all",
+                              product.featured
+                                ? "bg-gold text-white"
+                                : "bg-gray-100 text-gray-400 hover:bg-amber-50 hover:text-gold"
+                            )}
+                            title={
+                              product.featured
+                                ? "Remover destaque"
+                                : "Marcar como destaque"
+                            }
+                          >
+                            👑
+                          </button>
+                          <span className="text-xs text-ink-muted">
+                            {product.featured ? "Destaque" : "Normal"}
+                          </span>
+                        </div>
                         <div className="flex flex-col items-center gap-1">
                           <Toggle
                             on={product.available}

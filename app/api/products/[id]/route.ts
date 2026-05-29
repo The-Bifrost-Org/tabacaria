@@ -34,6 +34,7 @@ export async function PATCH(
   if (body.categoryId !== undefined) {
     data.category = { connect: { id: body.categoryId } };
   }
+  if (body.featured !== undefined) data.featured = body.featured;
   if (body.images !== undefined) {
     data.images = {
       deleteMany: {},

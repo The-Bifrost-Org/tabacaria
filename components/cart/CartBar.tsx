@@ -11,7 +11,12 @@ export function CartBar() {
   const [open, setOpen] = useState(false);
 
   if (totalItems === 0) return null;
-  if (pathname === "/checkout" || pathname === "/confirmacao") return null;
+  if (
+    pathname === "/checkout" ||
+    pathname === "/confirmacao" ||
+    pathname === "/"
+  )
+    return null;
 
   return (
     <>

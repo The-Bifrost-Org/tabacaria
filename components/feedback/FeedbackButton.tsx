@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { clsx } from "clsx";
+import { usePathname } from "next/navigation";
 
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
@@ -41,6 +42,8 @@ export function FeedbackButton() {
       setRating(0);
     }, 2500);
   }
+  const pathname = usePathname();
+  if (pathname === "/") return null;
 
   return (
     <>

@@ -26,6 +26,7 @@ model Product {
   images         ProductImage[]
   available      Boolean         @default(true)
   order          Int             @default(0)
+  featured       Boolean         @default(false)
   categoryId     String
   category       Category        @relation(fields: [categoryId], references: [id])
   variations     Variation[]

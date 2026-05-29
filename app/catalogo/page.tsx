@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
+import { NavBar } from "@/components/landing/NavBar";
+import { FlashSaleBanner } from "@/components/catalog/FlashSaleBanner";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import type { ProductWithRelations } from "@/types";
 import type { Category } from "@prisma/client";
-import { NavBar } from "@/components/landing/NavBar";
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
@@ -29,6 +30,7 @@ export default function CatalogPage() {
     <div className="min-h-screen bg-brand-bg pb-24">
       <Header />
       <NavBar />
+      <FlashSaleBanner />
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
           {Array.from({ length: 8 }).map((_, i) => (
