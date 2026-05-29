@@ -3,6 +3,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CartBar } from "@/components/cart/CartBar";
 import { AgeGateModal } from "@/components/modals/AgeGateModal";
+import { Footer } from "@/components/layout/Footer";
 import { CONFIG } from "@/lib/config";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
@@ -21,7 +22,12 @@ export default function RootLayout({
       <body>
         <CartProvider>
           <AgeGateModal />
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <main className="flex-1 pb-24">
+              {children}
+            </main>
+            <Footer />
+          </div>
           <CartBar />
           <FeedbackButton />
         </CartProvider>
