@@ -7,7 +7,7 @@ export function FeaturedProducts() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function fetchData() {
@@ -63,10 +63,19 @@ export function FeaturedProducts() {
                   !product.available ? "opacity-60" : ""
                 }`}
               >
-                <div className="w-full h-48 bg-[#F0EDE7] flex items-center justify-center text-5xl">
-                  🪴
-                </div>
-
+                <div className="w-full h-48 bg-[#F0EDE7] overflow-hidden">
+  {product.imageUrl ? (
+    <img
+      src={product.imageUrl}
+      alt={product.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-5xl">
+      🪴
+    </div>
+  )}
+</div>
                 <span className={`absolute top-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full ${
                   product.available ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
                 }`}>
@@ -82,7 +91,7 @@ export function FeaturedProducts() {
                   </div>
                   <button
                     disabled={!product.available}
-                    onClick={() => addItem({ id: product.id, name: product.name, price: product.price })}
+                    onClick={() => addToCart({productId: product.id, name: product.name, unitPrice: product.price, qty: 1 })}
                     className="w-9 h-9 rounded-full bg-[#C9A84C] text-white text-xl font-bold flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#E8C97A] transition-colors flex-shrink-0"
                   >
                     +

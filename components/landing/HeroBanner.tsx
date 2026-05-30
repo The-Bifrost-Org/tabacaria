@@ -5,7 +5,7 @@ const banners = [
   {
     id: 1,
     title: "Frete Grátis",
-    subtitle: "Em compras acima de R$ 25,00",
+    subtitle: "Em compras acima de R$ 20,00",
     bg: "from-[#1A1814] to-[#2D2820]",
   },
   {
@@ -40,7 +40,6 @@ export function HeroBanner() {
           visible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <span className="text-8xl mb-4">{banner.emoji}</span>
         <h2 className="text-3xl font-bold text-white mb-2 font-['Playfair_Display']">{banner.title}</h2>
 <p className="text-white/70 text-base italic font-['Playfair_Display']">{banner.subtitle}</p>
       </div>

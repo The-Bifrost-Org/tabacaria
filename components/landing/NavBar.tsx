@@ -9,7 +9,7 @@ export function NavBar() {
     <nav className="bg-white shadow-sm px-4 py-2 flex items-center justify-center gap-6">
       <a
         href="/"
-        className={`text-sm font-medium transition-colors px-3 py-1 rounded-full ${
+        className={`text-base font-medium transition-colors px-6 py-3 rounded-full ${
           isLanding
             ? "bg-[#C9A84C] text-white"
             : "text-black/70 hover:text-[#C9A84C]"
@@ -19,7 +19,7 @@ export function NavBar() {
       </a>
       <a
         href="/catalogo"
-        className={`text-sm font-medium transition-colors px-3 py-1 rounded-full ${
+        className={`text-base font-medium transition-colors px-6 py-3 rounded-full ${
           !isLanding
             ? "bg-[#C9A84C] text-white"
             : "text-black/70 hover:text-[#C9A84C]"

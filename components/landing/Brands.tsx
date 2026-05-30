@@ -7,7 +7,7 @@ const brands = [
 
 export function Brands() {
   return (
-    <section className="py-8 bg-white border-t border-b border-[#E8E5DF]">
+    <section className="py-3 bg-white border-t border-b border-[#E8E5DF]">
       <div className="px-4 mb-6 text-center">
         <h2 className="text-xl font-bold text-ink-primary font-['Playfair_Display']">
           Marcas que Trabalhamos
