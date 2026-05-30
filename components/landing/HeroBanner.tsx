@@ -1,19 +1,20 @@
 "use client";
+import { CONFIG } from "@/lib/config";
 import { useState, useEffect } from "react";
 
 const banners = [
   {
     id: 1,
     title: "Frete Grátis",
-    subtitle: "Em compras acima de R$ 25,00",
-    bg: "from-[#1A1814] to-[#2D2820]",
+    subtitle: "Em compras acima de R$ " + CONFIG.FREE_DELIVERY_ABOVE,
+    bg: "from-[#1A1814] to-[#2D2820]"
   },
   {
     id: 2,
     title: "Fique de Olho nos Cupons",
     subtitle: "Ofertas boladas pra você",
-    bg: "from-[#9A7A2E] to-[#C9A84C]",
-  },
+    bg: "from-[#9A7A2E] to-[#C9A84C]"
+  }
 ];
 
 export function HeroBanner() {
@@ -40,9 +41,12 @@ export function HeroBanner() {
           visible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <span className="text-8xl mb-4">{banner.emoji}</span>
-        <h2 className="text-3xl font-bold text-white mb-2 font-['Playfair_Display']">{banner.title}</h2>
-<p className="text-white/70 text-base italic font-['Playfair_Display']">{banner.subtitle}</p>
+        <h2 className="text-3xl font-bold text-white mb-2 font-['Playfair_Display']">
+          {banner.title}
+        </h2>
+        <p className="text-white/70 text-base italic font-['Playfair_Display']">
+          {banner.subtitle}
+        </p>
       </div>
 
       {/* Indicadores */}
