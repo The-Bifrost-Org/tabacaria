@@ -330,6 +330,16 @@ export default function AdminPage() {
 
             {/* Horários */}
             <StoreHoursManager />
+            {/* Galeria de imagens */}
+            <button
+              onClick={() => router.push("/admin/images")}
+              className="w-full bg-white rounded-2xl border border-brand-border p-4 flex items-center justify-between hover:border-gold transition-colors"
+            >
+              <span className="font-semibold text-ink-primary">
+                🖼️ Galeria de Imagens
+              </span>
+              <span className="text-ink-muted text-sm">Gerenciar →</span>
+            </button>
           </div>
 
           {/* ═══════════════════════════ */}
