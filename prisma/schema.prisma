@@ -11,42 +11,42 @@ model Category {
   name      String
   slug      String    @unique
   order     Int       @default(0)
-  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Product {
   id             String          @id @default(cuid())
   name           String
   description    String?
-  adminNote      String?
   price          Float
   imageUrl       String?
-  images         ProductImage[]
   available      Boolean         @default(true)
   order          Int             @default(0)
-  featured       Boolean         @default(false)
   categoryId     String
-  category       Category        @relation(fields: [categoryId], references: [id])
-  variations     Variation[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  adminNote      String?
+  featured       Boolean         @default(false)
   flashSaleItems FlashSaleItem[]
+  category       Category        @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  variations     Variation[]
 }
 
 model Variation {
   id             String          @id @default(cuid())
   name           String
   price          Float
-  imageUrl       String?
   available      Boolean         @default(true)
   order          Int             @default(0)
   productId      String
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  imageUrl       String?
   flashSaleItems FlashSaleItem[]
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model AdminUser {
@@ -65,11 +65,11 @@ model StoreConfig {
 
 model Feedback {
   id        String   @id @default(cuid())
-  type      String // 'sugestao' ou 'feedback'
+  type      String
   message   String
   name      String?
-  rating    Int? // 1-5 estrelas (só para feedback)
   createdAt DateTime @default(now())
+  rating    Int?
 }
 
 model ProductImage {
@@ -77,28 +77,28 @@ model ProductImage {
   url       String
   order     Int      @default(0)
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Coupon {
   id        String    @id @default(cuid())
   code      String    @unique
-  discount  Float // valor ou percentual
-  type      String // 'percent' ou 'fixed'
+  discount  Float
+  type      String
   active    Boolean   @default(true)
-  maxUses   Int? // null = ilimitado
+  maxUses   Int?
   usedCount Int       @default(0)
-  expiresAt DateTime? // null = sem validade
+  expiresAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
 model StoreHours {
   id        String   @id @default(cuid())
-  dayOfWeek Int // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
-  openTime  String // "08:00"
-  closeTime String // "22:00"
+  dayOfWeek Int
+  openTime  String
+  closeTime String
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -111,20 +111,20 @@ model FlashSale {
   startAt     DateTime
   endAt       DateTime
   active      Boolean         @default(true)
-  items       FlashSaleItem[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  items       FlashSaleItem[]
 }
 
 model FlashSaleItem {
   id            String     @id @default(cuid())
   flashSaleId   String
-  flashSale     FlashSale  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
   productId     String
-  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   variationId   String?
-  variation     Variation? @relation(fields: [variationId], references: [id], onDelete: Cascade)
   originalPrice Float
   salePrice     Float
   createdAt     DateTime   @default(now())
+  flashSale     FlashSale  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variation     Variation? @relation(fields: [variationId], references: [id], onDelete: Cascade)
 }

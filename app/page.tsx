@@ -6,9 +6,10 @@ import { Brands } from "@/components/landing/Brands";
 import { StoreMap } from "@/components/landing/StoreMap";
 import { FlashSaleSection } from "@/components/landing/FlashSaleSection";
 
+
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-brand-bg pb-24">
+    <main className="bg-brand-bg pb-24">
       <Header />
       <NavBar />
       <HeroBanner />

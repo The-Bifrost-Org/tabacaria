@@ -1,6 +1,6 @@
 export function StoreMap() {
   return (
-    <section className="py-8">
+    <section className="pt-4 pb-0 -mb-24">
       <div className="px-4 mb-6 text-center">
         <h2 className="text-xl font-bold text-ink-primary font-['Playfair_Display']">
           Nossa Localização
