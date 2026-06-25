@@ -35,11 +35,13 @@ export function ProductGrid({ products, categories }: Props) {
           <p className="text-sm">Nenhum produto nesta categoria</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-4">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+<div className="max-w-[1600px] mx-auto px-6">
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 py-6">
+    {filtered.map((product) => (
+      <ProductCard key={product.id} product={product} />
+    ))}
+  </div>
+</div>
       )}
     </>
   );

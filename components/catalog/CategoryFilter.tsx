@@ -13,6 +13,7 @@ interface Props {
 export function CategoryFilter({ categories, onSelect, selected }: Props) {
   return (
     <div className="sticky top-16 z-30 bg-white border-b border-brand-border">
+      <div className="max-w-[1600px] mx-auto">
       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-3">
         <button
           onClick={() => onSelect(null)}
@@ -40,6 +41,7 @@ export function CategoryFilter({ categories, onSelect, selected }: Props) {
             {cat.name}
           </button>
         ))}
+      </div>
       </div>
     </div>
   );
