@@ -15,7 +15,7 @@ export default function LandingPage() {
       <HeroBanner />
       <FeaturedProducts />
       <FlashSaleSection />
-      {/* <Brands /> */}
+      {<Brands />}
       <StoreMap />
     </main>
   );
