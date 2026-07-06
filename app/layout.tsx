@@ -23,7 +23,7 @@ export default function RootLayout({
         <CartProvider>
           <AgeGateModal />
           <div className="flex flex-col min-h-screen">
-            <main className="flex-1 pb-24">
+            <main className="flex-1 pb-22">
               {children}
             </main>
             <Footer />
