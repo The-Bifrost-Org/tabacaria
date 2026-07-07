@@ -9,6 +9,7 @@ export default function ConfirmacaoPage() {
   const router = useRouter();
   const { clearCart } = useCart();
   const [url, setUrl] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("tabacaria_order");
@@ -17,6 +18,7 @@ export default function ConfirmacaoPage() {
       return;
     }
     const order = JSON.parse(raw);
+    setOrderNumber(order.orderNumber ?? null);
     setUrl(buildWhatsAppMessage(order));
   }, [router]);
 
@@ -35,6 +37,13 @@ export default function ConfirmacaoPage() {
       <h1 className="font-display text-2xl font-bold text-ink-primary mb-2">
         Pedido Pronto!
       </h1>
+
+      {orderNumber && (
+        <p className="text-sm font-semibold text-gold mb-2">
+          Pedido #{orderNumber}
+        </p>
+      )}
+
       <p className="text-ink-secondary mb-2">
         Finalize seu pedido diretamente pelo WhatsApp.
       </p>

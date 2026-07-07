@@ -36,3 +36,21 @@ export async function DELETE() {
   res.cookies.delete("admin_session");
   return res;
 }
+
+export async function requireAdmin(request: NextRequest) {
+  const sessionId = request.cookies.get("admin_session")?.value;
+
+  if (!sessionId) {
+    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  }
+
+  const admin = await prisma.adminUser.findUnique({
+    where: { id: sessionId }
+  });
+
+  if (!admin) {
+    return NextResponse.json({ error: "Sessão inválida." }, { status: 401 });
+  }
+
+  return null; // autorizado
+}
