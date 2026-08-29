@@ -28,6 +28,7 @@ export default function CheckoutPage() {
   const [couponData, setCouponData] = useState<any>(null);
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
+  const [deliveryAvailable, setDeliveryAvailable] = useState(true);
 
   const discountAmount = couponData?.discountAmount ?? 0;
   const deliveryFee =
@@ -41,6 +42,12 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (items.length === 0) router.replace("/");
   }, [items, router]);
+
+  useEffect(() => {
+    fetch("/api/delivery-config")
+      .then((r) => r.json())
+      .then((data) => setDeliveryAvailable(data.enabled));
+  }, []);
 
   function validate() {
     const e: Record<string, string> = {};
@@ -358,19 +365,28 @@ export default function CheckoutPage() {
         {/* Entrega */}
         <section className="space-y-3">
           <h2 className="font-semibold text-ink-primary">Método de Entrega</h2>
-          <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
             {(["retirada", "entrega"] as Delivery[]).map((d) => (
               <button
                 key={d}
-                onClick={() => setDelivery(d)}
+                onClick={() => {
+                  if (d === "entrega" && !deliveryAvailable) return;
+                  setDelivery(d);
+                }}
+                disabled={d === "entrega" && !deliveryAvailable}
                 className={clsx(
                   "py-3 rounded-xl border text-sm font-medium transition-all",
-                  delivery === d
-                    ? "border-gold bg-amber-50 text-gold ring-2 ring-gold"
-                    : "border-brand-border text-ink-secondary hover:border-gold"
+                  d === "entrega" && !deliveryAvailable
+                    ? "border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed"
+                    : delivery === d
+                      ? "border-gold bg-amber-50 text-gold ring-2 ring-gold"
+                      : "border-brand-border text-ink-secondary hover:border-gold"
                 )}
               >
                 {d === "retirada" ? "🏪 Retirada" : "🛵 Entrega"}
+                {d === "entrega" && !deliveryAvailable && (
+                  <span className="block text-xs mt-0.5 text-gray-400">Indisponível</span>
+                )}
               </button>
             ))}
           </div>

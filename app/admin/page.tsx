@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { CouponManager } from "@/components/admin/CouponManager";
 import { StoreHoursManager } from "@/components/admin/StoreHoursManager";
+import { DeliveryManager } from "@/components/admin/DeliveryManager";
+
 
 interface Variation {
   id: string;
@@ -330,6 +332,7 @@ export default function AdminPage() {
 
             {/* Horários */}
             <StoreHoursManager />
+            <DeliveryManager />
             {/* Galeria de imagens */}
             <button
               onClick={() => router.push("/admin/images")}
