@@ -37,3 +37,28 @@ export interface Order {
   needsChange?: boolean;
   changeFor?: number;
 }
+
+export interface Order {
+  items: CartItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  discountAmount?: number;
+  couponCode?: string;
+  name: string;
+  phone: string;
+  delivery: "retirada" | "entrega";
+  payment: "pix" | "card" | "cash";
+  paymentLabel: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  needsChange?: boolean;
+  changeFor?: number;
+  // Campos novos
+  isOutsideCity?: boolean;
+  destinoCity?: string;
+  destinoUF?: string;
+  destinoCEP?: string;
+  freteTransportadora?: string;
+}
