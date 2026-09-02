@@ -36,6 +36,7 @@ export interface Order {
   neighborhood?: string;
   needsChange?: boolean;
   changeFor?: number;
+  orderNumber?: number;
 }
 
 export interface Order {

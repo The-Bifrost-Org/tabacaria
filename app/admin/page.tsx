@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [catLoading, setCatLoading] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [showFeedbacks, setShowFeedbacks] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -56,6 +57,9 @@ export default function AdminPage() {
     fetch("/api/feedback")
       .then((r) => r.json())
       .then(setFeedbacks);
+    fetch("/api/admin/orders?status=RECEBIDO")
+      .then((r) => r.json())
+      .then((data) => setPendingOrdersCount(data.orders?.length ?? 0));
   }, []);
 
   async function fetchProducts() {
@@ -248,6 +252,25 @@ export default function AdminPage() {
                 <p className="text-sm text-ink-muted mt-1">Esgotados</p>
               </div>
             </div>
+
+            {/* Pedidos */}
+            <button
+              onClick={() => router.push("/admin/pedidos")}
+              className="w-full bg-white rounded-2xl border border-brand-border p-4 flex items-center justify-between hover:border-gold transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-ink-primary">
+                  🧾 Pedidos
+                </span>
+                {pendingOrdersCount > 0 && (
+                  <span className="bg-gold text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    {pendingOrdersCount} novo
+                    {pendingOrdersCount !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+              <span className="text-ink-muted text-sm">Ver todos →</span>
+            </button>
 
             {/* Feedbacks  */}
             <button

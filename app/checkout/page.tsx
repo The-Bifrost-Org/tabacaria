@@ -9,6 +9,17 @@ import { clsx } from "clsx";
 type Delivery = "retirada" | "entrega";
 type Payment = "pix" | "card" | "cash";
 
+const DELIVERY_MAP: Record<Delivery, "RETIRADA" | "ENTREGA"> = {
+  retirada: "RETIRADA",
+  entrega: "ENTREGA"
+};
+
+const PAYMENT_MAP: Record<Payment, "PIX" | "CARTAO" | "DINHEIRO"> = {
+  pix: "PIX",
+  card: "CARTAO",
+  cash: "DINHEIRO"
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart, removeFromCart, updateQty } = useCart();
@@ -119,6 +130,7 @@ export default function CheckoutPage() {
 
   async function handleSubmit() {
     if (!validate()) return;
+
     if (couponData) {
       await fetch(`/api/coupons/validate`, {
         method: "POST",
@@ -126,8 +138,12 @@ export default function CheckoutPage() {
         body: JSON.stringify({ code: couponData.code, subtotal, increment: true })
       });
     }
-    const paymentLabel = CONFIG.PAYMENT_OPTIONS.find((p) => p.id === payment)?.label ?? "";
-    const order = {
+    
+   const paymentLabel =
+      CONFIG.PAYMENT_OPTIONS.find((p) => p.id === payment)?.label ?? "";
+
+    // payload salvo no sessionStorage p/ a tela de confirmação montar o link do WhatsApp
+    const localOrder = {
       items,
       subtotal,
       discountAmount,
@@ -150,8 +166,59 @@ export default function CheckoutPage() {
       destinoCEP: cepDestino,
       freteTransportadora: freteSelected?.name ?? undefined,
     };
-    sessionStorage.setItem("tabacaria_order", JSON.stringify(order));
-    router.push("/confirmacao");
+
+    // payload para persistir no banco via API
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: name,
+          customerPhone: phone,
+          deliveryType: DELIVERY_MAP[delivery],
+          street: delivery === "entrega" ? street : undefined,
+          number: delivery === "entrega" ? number : undefined,
+          neighborhood: delivery === "entrega" ? neighborhood : undefined,
+          paymentType: PAYMENT_MAP[payment],
+          needsChange: payment === "cash" ? needsChange : false,
+          changeFor: needsChange && changeFor ? Number(changeFor) : undefined,
+          deliveryFee,
+          couponCode: couponData?.code,
+          items: items.map((item) => ({
+            productId: item.productId,
+            productName: item.name,
+            variationName: item.variation,
+            unitPrice: item.unitPrice,
+            qty: item.qty
+          }))
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error ?? "Erro ao registrar pedido. Tente novamente.");
+        return;
+      }
+
+      const { order } = await res.json();
+
+      // guarda o número do pedido junto, pra exibir/usar na confirmação
+      sessionStorage.setItem(
+        "tabacaria_order",
+        JSON.stringify({
+          ...localOrder,
+          orderNumber: order.orderNumber,
+          orderId: order.id
+        })
+      );
+
+      router.push("/confirmacao");
+    } catch (err) {
+      console.error("Erro ao criar pedido:", err);
+      alert(
+        "Não foi possível registrar seu pedido. Verifique sua conexão e tente novamente."
+      );
+    }
   }
 
   const inputClass = (field: string) =>

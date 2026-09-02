@@ -92,6 +92,7 @@ model Coupon {
   expiresAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  orders    Order[]
 }
 
 model StoreHours {
@@ -127,4 +128,79 @@ model FlashSaleItem {
   flashSale     FlashSale  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
   product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   variation     Variation? @relation(fields: [variationId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  RECEBIDO
+  CONFIRMADO
+  PRONTO_RETIRADA
+  A_CAMINHO
+  FINALIZADO
+  CANCELADO
+}
+
+enum DeliveryType {
+  RETIRADA
+  ENTREGA
+}
+
+enum PaymentType {
+  PIX
+  CARTAO
+  DINHEIRO
+}
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber Int    @default(autoincrement())
+
+  customerName  String
+  customerPhone String
+
+  deliveryType DeliveryType
+  street       String?
+  number       String?
+  neighborhood String?
+
+  paymentType PaymentType
+  needsChange Boolean     @default(false)
+  changeFor   Float?
+
+  subtotal    Float
+  deliveryFee Float @default(0)
+  discount    Float @default(0)
+  total       Float
+
+  couponId String?
+  coupon   Coupon? @relation(fields: [couponId], references: [id])
+
+  status    OrderStatus @default(RECEBIDO)
+  adminNote String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
+  readyAt     DateTime?
+  finishedAt  DateTime?
+  cancelledAt DateTime?
+
+  items OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId     String?
+  productName   String
+  variationId   String?
+  variationName String?
+  unitPrice     Float
+  qty           Int
+
+  createdAt DateTime @default(now())
 }

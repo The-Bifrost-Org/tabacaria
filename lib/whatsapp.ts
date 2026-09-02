@@ -1,5 +1,6 @@
 import { CONFIG } from "./config";
 import type { Order } from "@/types";
+import type { Order as PrismaOrder, OrderStatus } from "@prisma/client";
 
 const fmt = (v: number) => v.toFixed(2).replace(".", ",");
 
@@ -50,8 +51,13 @@ export function buildWhatsAppMessage(order: Order): string {
         : "";
   }
 
+  const orderNumberPart = order.orderNumber
+    ? `Pedido #${order.orderNumber}`
+    : "";
+
   const lines = [
     "Olá! Gostaria de fazer o seguinte pedido:",
+    orderNumberPart,
     "",
     itemLines,
     "",
@@ -70,4 +76,29 @@ export function buildWhatsAppMessage(order: Order): string {
 
   const msg = lines.join("\n");
   return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+const STATUS_TEMPLATES: Partial
+  Record<OrderStatus, (order: PrismaOrder) => string>
+> = {
+  PRONTO_RETIRADA: (order) =>
+    `Seu pedido #${order.orderNumber} está pronto para retirada! Te esperamos.`,
+  A_CAMINHO: (order) =>
+    `Seu pedido #${order.orderNumber} saiu para entrega! Chega em breve.`,
+  FINALIZADO: (order) =>
+    `Pedido #${order.orderNumber} finalizado. Obrigado pela preferência!\n\nQue tal deixar uma avaliação? ${CONFIG.SITE_URL}/avaliacao?pedido=${order.orderNumber}`,
+  CANCELADO: (order) =>
+    `Seu pedido #${order.orderNumber} foi cancelado. Qualquer dúvida, fale com a gente.`
+};
+
+export function buildStatusMessage(
+  order: PrismaOrder,
+  status: OrderStatus
+): string {
+  const buildText = STATUS_TEMPLATES[status];
+  const text = buildText
+    ? buildText(order)
+    : `Atualização do seu pedido #${order.orderNumber}.`;
+  const phone = order.customerPhone.replace(/\D/g, "");
+  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
