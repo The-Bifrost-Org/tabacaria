@@ -13,9 +13,9 @@ export function buildWhatsAppMessage(order: Order): string {
     })
     .join("\n");
 
-  const addressPart =
-    order.delivery === "entrega"
-      ? `Endereço: ${order.street}, ${order.number} — ${order.neighborhood}`
+  const couponPart =
+    order.discountAmount && order.discountAmount > 0
+      ? `Cupom (${order.couponCode}): - R$ ${fmt(order.discountAmount)}`
       : "";
 
   const changePart =
@@ -23,10 +23,33 @@ export function buildWhatsAppMessage(order: Order): string {
       ? `Troco para: R$ ${fmt(order.changeFor)}`
       : "";
 
-  const couponPart =
-    order.discountAmount && order.discountAmount > 0
-      ? `Cupom (${order.couponCode}): - R$ ${fmt(order.discountAmount)}`
-      : "";
+  let entregaPart = "";
+  let addressPart = "";
+
+  if (order.delivery === "retirada") {
+    entregaPart = "Entrega: Retirada no balcão";
+  } else if (order.isOutsideCity) {
+    // Cliente de outra cidade — frete pelos Correios
+    entregaPart = `Frete (Correios): R$ ${fmt(order.deliveryFee)}`;
+    addressPart = [
+      order.street && order.number
+        ? `Endereço: ${order.street}, ${order.number}${order.neighborhood ? ` — ${order.neighborhood}` : ""}`
+        : "",
+      order.destinoCity && order.destinoUF
+        ? `Cidade: ${order.destinoCity} - ${order.destinoUF}`
+        : "",
+      order.destinoCEP
+        ? `CEP: ${order.destinoCEP}`
+        : "",
+    ].filter(Boolean).join("\n");
+  } else {
+    // Cliente local
+    entregaPart = `Entrega: R$ ${fmt(order.deliveryFee)}`;
+    addressPart =
+      order.street && order.number
+        ? `Endereço: ${order.street}, ${order.number}${order.neighborhood ? ` — ${order.neighborhood}` : ""}`
+        : "";
+  }
 
   const orderNumberPart = order.orderNumber
     ? `Pedido #${order.orderNumber}`
@@ -40,7 +63,7 @@ export function buildWhatsAppMessage(order: Order): string {
     "",
     `Subtotal: R$ ${fmt(order.subtotal)}`,
     couponPart,
-    `Entrega: ${order.delivery === "entrega" ? `R$ ${fmt(order.deliveryFee)}` : "Retirada no balcão"}`,
+    entregaPart,
     `Total: R$ ${fmt(order.total)}`,
     "",
     `Pagamento: ${order.paymentLabel}`,
@@ -48,15 +71,14 @@ export function buildWhatsAppMessage(order: Order): string {
     addressPart,
     "",
     `Nome: ${order.name}`,
-    `Telefone: ${order.phone}`
+    `Telefone: ${order.phone}`,
   ].filter(Boolean);
 
   const msg = lines.join("\n");
-
   return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
-const STATUS_TEMPLATES: Partial<
+const STATUS_TEMPLATES: Partial
   Record<OrderStatus, (order: PrismaOrder) => string>
 > = {
   PRONTO_RETIRADA: (order) =>
@@ -77,7 +99,6 @@ export function buildStatusMessage(
   const text = buildText
     ? buildText(order)
     : `Atualização do seu pedido #${order.orderNumber}.`;
-
   const phone = order.customerPhone.replace(/\D/g, "");
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
