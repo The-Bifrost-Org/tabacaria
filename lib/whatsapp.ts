@@ -38,10 +38,10 @@ export function buildWhatsAppMessage(order: Order): string {
       order.destinoCity && order.destinoUF
         ? `Cidade: ${order.destinoCity} - ${order.destinoUF}`
         : "",
-      order.destinoCEP
-        ? `CEP: ${order.destinoCEP}`
-        : "",
-    ].filter(Boolean).join("\n");
+      order.destinoCEP ? `CEP: ${order.destinoCEP}` : ""
+    ]
+      .filter(Boolean)
+      .join("\n");
   } else {
     // Cliente local
     entregaPart = `Entrega: R$ ${fmt(order.deliveryFee)}`;
@@ -71,14 +71,14 @@ export function buildWhatsAppMessage(order: Order): string {
     addressPart,
     "",
     `Nome: ${order.name}`,
-    `Telefone: ${order.phone}`,
+    `Telefone: ${order.phone}`
   ].filter(Boolean);
 
   const msg = lines.join("\n");
   return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
-const STATUS_TEMPLATES: Partial
+const STATUS_TEMPLATES: Partial<
   Record<OrderStatus, (order: PrismaOrder) => string>
 > = {
   PRONTO_RETIRADA: (order) =>
