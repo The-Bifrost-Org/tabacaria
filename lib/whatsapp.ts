@@ -78,7 +78,7 @@ export function buildWhatsAppMessage(order: Order): string {
   return `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
-const STATUS_TEMPLATES: Partial
+const STATUS_TEMPLATES: Partial<
   Record<OrderStatus, (order: PrismaOrder) => string>
 > = {
   PRONTO_RETIRADA: (order) =>
