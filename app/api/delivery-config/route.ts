@@ -12,16 +12,23 @@ export async function GET() {
   const cutoffTime = cutoff?.value ?? "20:00";
   const isEnabled = enabled?.value === "true";
 
-  // Verifica horário limite
+  // Usa horário de Brasília (UTC-3) independente do servidor
   const now = new Date();
-  const timeStr = now.toTimeString().slice(0, 5);
-  const withinTime = timeStr <= cutoffTime;
+  const brasiliaOffset = -3 * 60; // UTC-3 em minutos
+  const localMinutes = now.getUTCHours() * 60 + now.getUTCMinutes() + brasiliaOffset;
+  const localHours = Math.floor(((localMinutes % 1440) + 1440) % 1440 / 60);
+  const localMins = ((localMinutes % 1440) + 1440) % 1440 % 60;
+  const timeStr = `${String(localHours).padStart(2, "0")}:${String(localMins).padStart(2, "0")}`;
+
+  // Desativa SOMENTE a partir do horário limite (não antes)
+  const withinTime = timeStr < cutoffTime;
 
   return NextResponse.json({
     enabled: isEnabled && withinTime,
     manualEnabled: isEnabled,
     cutoff: cutoffTime,
     withinTime,
+    serverTime: timeStr, // útil para debug
   }, {
     headers: { "Cache-Control": "no-store" }
   });

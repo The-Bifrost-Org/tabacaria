@@ -116,16 +116,16 @@ export function DeliveryManager() {
 
               {/* Status atual */}
               <div className={clsx(
-                "rounded-xl p-3 text-sm",
-                deliveryActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
-              )}>
-                {deliveryActive
-                  ? `✅ Entrega ativa até ${cutoff}`
-                  : !enabled
-                    ? "🚫 Entrega desativada manualmente"
-                    : `⏰ Fora do horário de entrega (limite: ${cutoff})`
-                }
-              </div>
+  "rounded-xl p-3 text-sm",
+  deliveryActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+)}>
+  {deliveryActive
+    ? `✅ Entrega ativa até ${cutoff}`
+    : !enabled
+      ? "🚫 Entrega desativada manualmente"
+      : `⏰ Fora do horário de entrega (limite: ${cutoff})`
+  }
+</div>
             </>
           )}
         </div>

@@ -52,13 +52,13 @@ export default function CheckoutPage() {
   const discountAmount = couponData?.discountAmount ?? 0;
 
   const deliveryFee =
-    delivery === "entrega"
-      ? isOutsideCity && freteSelected
-        ? Number(freteSelected.price)
-        : subtotal - discountAmount >= CONFIG.FREE_DELIVERY_ABOVE
-          ? 0
-          : CONFIG.DELIVERY_FEE
-      : 0;
+  delivery === "entrega"
+    ? isOutsideCity && freteSelected
+      ? parseFloat(String(freteSelected.price)) || 0
+      : subtotal - discountAmount >= CONFIG.FREE_DELIVERY_ABOVE
+        ? 0
+        : CONFIG.DELIVERY_FEE
+    : 0;
 
   const total = subtotal - discountAmount + deliveryFee;
 
